@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 import 'l10n/app_localizations.dart';
 import 'providers/settings_provider.dart';
@@ -19,6 +20,17 @@ void main() async {
   // Initialize notifications
   final notificationService = NotificationService();
   await notificationService.initialize();
+
+  // Initialize background audio for lockscreen/notification controls
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'quran_companion_audio',
+      androidNotificationChannelName: 'Quran Companion Audio',
+      androidNotificationOngoing: true,
+    );
+  } catch (e) {
+    debugPrint('JustAudioBackground init failed: $e');
+  }
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -48,7 +60,6 @@ class QuranCompanionApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
         Provider<AudioService>(
           create: (_) => AudioService(),
-          dispose: (_, service) => service.dispose(),
         ),
       ],
       child: Consumer<SettingsProvider>(

@@ -27,9 +27,7 @@ class AudioService {
   Stream<int?> get currentVerseStream => _currentVerseController.stream;
   Stream<bool> get playbackStateStream => _playbackStateController.stream;
   
-  // Audio player streams
-  Stream<Duration> get positionStream => _audioPlayer.positionStream;
-  Stream<Duration?> get durationStream => _audioPlayer.durationStream;
+  // Audio player streams exposed for UI
   
   // Popular reciters with their server directories
   final List<Reciter> reciters = [
@@ -57,18 +55,23 @@ class AudioService {
     Reciter(
       identifier: 'husary',
       name: 'محمود خليل الحصري',
-      englishName: 'Mahmoud Khalil Al-Husary',
+      englishName: 'Mahmoud Khalil Al-Hussary',
       style: 'Murattal',
-      bitrate: '64',
+      bitrate: '128',
     ),
   ];
+  
+  AudioService() {
+    _init();
+  }
 
-  String _everyAyahDirFor(String reciterIdentifier) {
-    switch (reciterIdentifier) {
+  // Map our short identifiers to everyayah.com directory names for verse audio
+  String _everyAyahDirFor(String identifier) {
+    switch (identifier) {
       case 'afs':
         return 'Alafasy_128kbps';
       case 'abdulbasit':
-        return 'AbdulSamad_64kbps_QuranExplorer.Com';
+        return 'Abdul_Basit_Murattal_64kbps';
       case 'minshawi':
         return 'Minshawy_Murattal_128kbps';
       case 'husary':
@@ -106,21 +109,38 @@ class AudioService {
         reciter.identifier,
       );
       
-      String audioUrl;
-      if (isDownloaded) {
-        // Use offline audio
-        audioUrl = await _offlineAudioService.getLocalAudioPath(
+      if (!isDownloaded) {
+        // Fallback to old download service
+        isDownloaded = await _downloadService.isAudioDownloaded(
           surahNumber,
           reciter.identifier,
         );
-      } else {
-        // Use online audio
-        final reciterDir = _everyAyahDirFor(reciter.identifier);
-        final surahStr = surahNumber.toString().padLeft(3, '0');
-        audioUrl = '$baseAudioUrl/$reciterDir/$surahStr.mp3';
       }
       
-      await _audioPlayer.setUrl(audioUrl);
+      if (isDownloaded) {
+        // Play from local file (try new service first)
+        String localPath;
+        try {
+          localPath = await _offlineAudioService.getLocalAudioPath(
+            surahNumber,
+            reciter.identifier,
+          );
+        } catch (e) {
+          // Fallback to old service
+          localPath = await _downloadService.getLocalAudioPath(
+            surahNumber,
+            reciter.identifier,
+          );
+        }
+        await _audioPlayer.setAudioSource(AudioSource.uri(Uri.file(localPath)));
+      } else {
+        // Stream from internet - format surah number with leading zeros
+        final formattedSurah = surahNumber.toString().padLeft(3, '0');
+        final url = '$baseAudioUrl/${reciter.identifier}/$formattedSurah.mp3';
+        debugPrint('Attempting to play audio from: $url');
+        await _audioPlayer.setUrl(url);
+      }
+      
       await _audioPlayer.play();
     } catch (e) {
       debugPrint('Audio error: $e');
@@ -163,7 +183,7 @@ class AudioService {
     final reciterDir = _everyAyahDirFor(reciter.identifier);
     final surahStr = surahNumber.toString().padLeft(3, '0');
     final verseStr = verseNumber.toString().padLeft(3, '0');
-    return 'https://everyayah.com/data/$reciterDir/$surahStr$verseStr.mp3';
+    return '$baseAudioUrl/$reciterDir/$surahStr$verseStr.mp3';
   }
   
   Future<void> pause() async {
@@ -177,10 +197,22 @@ class AudioService {
   Future<void> stop() async {
     await _audioPlayer.stop();
   }
+
+  // Cancel any ongoing sequential playback
+  void cancelSequential() {
+    _audioPlayer.stop();
+    _currentVerseController.add(null);
+    _playbackStateController.add(false);
+    _isPlayingVerse = false;
+  }
   
   Future<void> seek(Duration position) async {
     await _audioPlayer.seek(position);
   }
+  
+  Stream<Duration> get positionStream => _audioPlayer.positionStream;
+  Stream<Duration?> get durationStream => _audioPlayer.durationStream;
+  Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
   
   bool get isPlaying => _audioPlayer.playing;
 
@@ -193,13 +225,16 @@ class AudioService {
     await _offlineAudioService.downloadAllSurahsForReciter(reciter, onProgress: onProgress);
   }
 
-  Future<bool> isAudioDownloaded(int surahNumber, String reciterIdentifier) async {
-    return await _offlineAudioService.isAudioDownloaded(surahNumber, reciterIdentifier);
+  Future<double> getDownloadProgress(String reciterIdentifier) async {
+    return await _offlineAudioService.getDownloadProgress(reciterIdentifier);
   }
 
-  Future<void> deleteSurahAudio(int surahNumber, String reciterIdentifier) async {
-    // Method not implemented in OfflineAudioService yet
-    debugPrint('deleteSurahAudio: Not implemented yet');
+  Future<bool> isReciterFullyDownloaded(String reciterIdentifier) async {
+    return await _offlineAudioService.isReciterFullyDownloaded(reciterIdentifier);
+  }
+
+  Future<List<String>> getDownloadedReciters() async {
+    return await _offlineAudioService.getDownloadedReciters();
   }
 
   Future<void> deleteReciterAudio(String reciterIdentifier) async {
@@ -214,6 +249,7 @@ class AudioService {
     await _offlineAudioService.clearAllAudio();
   }
 
+
   // Sequential verse playback using a prebuilt, gapless playlist
   Future<void> playSequentialVerses(int surahNumber, List<int> verseNumbers, Reciter reciter) async {
     try {
@@ -226,52 +262,51 @@ class AudioService {
       // Build list of verse audio sources (EveryAyah URLs)
       final formattedSurah = surahNumber.toString().padLeft(3, '0');
       final dir = _everyAyahDirFor(reciter.identifier);
-      final sources = <AudioSource>[];
-      
-      for (final v in verseNumbers) {
-        final formattedVerse = v.toString().padLeft(3, '0');
-        final verseId = '$formattedSurah$formattedVerse';
-        final url = 'https://everyayah.com/data/$dir/$verseId.mp3';
-        sources.add(
-          AudioSource.uri(
-            Uri.parse(url),
-            tag: MediaItem(
-              id: verseId,
-              album: 'Surah $formattedSurah',
-              title: 'Ayah $formattedVerse',
-              artist: reciter.englishName,
-            ),
+    final sources = <AudioSource>[];
+    for (final v in verseNumbers) {
+      final formattedVerse = v.toString().padLeft(3, '0');
+      final verseId = '$formattedSurah$formattedVerse';
+      final url = 'https://everyayah.com/data/$dir/$verseId.mp3';
+      sources.add(
+        AudioSource.uri(
+          Uri.parse(url),
+          tag: MediaItem(
+            id: verseId,
+            album: 'Surah $formattedSurah',
+            title: 'Ayah $formattedVerse',
+            artist: reciter.englishName,
           ),
-        );
+        ),
+      );
+    }
+
+    // Cancel previous listeners to avoid stacking
+    await _playerStateSub?.cancel();
+    await _currentIndexSub?.cancel();
+
+    // Set the concatenating source for gapless playback
+    final playlist = ConcatenatingAudioSource(children: sources);
+    await _audioPlayer.setAudioSource(playlist);
+
+    // Emit playback state and start
+    _playbackStateController.add(true);
+    await _audioPlayer.play();
+
+    // Track current index to emit the currently playing verse number for UI highlight
+    _currentIndexSub = _audioPlayer.currentIndexStream.listen((index) {
+      if (index == null || index < 0 || index >= verseNumbers.length) return;
+      _currentVerse = verseNumbers[index];
+      _currentVerseController.add(_currentVerse);
+    });
+
+    // Handle completion
+    _playerStateSub = _audioPlayer.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed) {
+        _currentVerseController.add(null);
+        _playbackStateController.add(false);
+        _isPlayingVerse = false;
       }
-
-      // Cancel previous listeners to avoid stacking
-      await _playerStateSub?.cancel();
-      await _currentIndexSub?.cancel();
-
-      // Set the concatenating source for gapless playback
-      final playlist = ConcatenatingAudioSource(children: sources);
-      await _audioPlayer.setAudioSource(playlist);
-
-      // Emit playback state and start
-      _playbackStateController.add(true);
-      await _audioPlayer.play();
-
-      // Track current index to emit the currently playing verse number for UI highlight
-      _currentIndexSub = _audioPlayer.currentIndexStream.listen((index) {
-        if (index == null || index < 0 || index >= verseNumbers.length) return;
-        _currentVerse = verseNumbers[index];
-        _currentVerseController.add(_currentVerse);
-      });
-
-      // Handle completion
-      _playerStateSub = _audioPlayer.playerStateStream.listen((state) {
-        if (state.processingState == ProcessingState.completed) {
-          _currentVerseController.add(null);
-          _playbackStateController.add(false);
-          _isPlayingVerse = false;
-        }
-      });
+    });
     } catch (e) {
       debugPrint('AudioService: Error in playSequentialVerses: $e');
       _playbackStateController.add(false);

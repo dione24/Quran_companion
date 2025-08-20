@@ -31,6 +31,132 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
     _loadSurahData();
     _setupAudioListener();
   }
+
+  Widget _buildMiniPlayer(AudioService audioService) {
+    return StreamBuilder<bool>(
+      stream: audioService.playbackStateStream,
+      initialData: false,
+      builder: (context, playbackSnap) {
+        final isPlaying = playbackSnap.data == true;
+        if (!isPlaying) {
+          return const SizedBox.shrink();
+        }
+        return StreamBuilder<int?>(
+          stream: audioService.currentVerseStream,
+          initialData: null,
+          builder: (context, verseSnap) {
+            return SafeArea(
+              top: false,
+              child: Material(
+                color: Theme.of(context).colorScheme.surface,
+                elevation: 8,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 56, maxHeight: 96),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill),
+                      onPressed: () async {
+                        if (isPlaying) {
+                          await audioService.pause();
+                        } else {
+                          await audioService.resume();
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.stop_circle),
+                      onPressed: () async {
+                        audioService.cancelSequential();
+                        await audioService.stop();
+                      },
+                    ),
+                    Expanded(
+                      child: StreamBuilder<Duration?>(
+                        stream: audioService.durationStream,
+                        initialData: Duration.zero,
+                        builder: (context, durSnap) {
+                          final total = durSnap.data ?? Duration.zero;
+                          return StreamBuilder<Duration>(
+                            stream: audioService.positionStream,
+                            initialData: Duration.zero,
+                            builder: (context, posSnap) {
+                              final pos = posSnap.data ?? Duration.zero;
+                              final max = total.inMilliseconds.toDouble().clamp(0.0, double.infinity);
+                              final value = pos.inMilliseconds.toDouble().clamp(0.0, max);
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Slider(
+                                    min: 0,
+                                    max: max > 0 ? max : 1,
+                                    value: max > 0 ? value : 0,
+                                    onChanged: (v) async {
+                                      if (max > 0) {
+                                        await audioService.seek(Duration(milliseconds: v.round()));
+                                      }
+                                    },
+                                  ),
+                                  if (verseSnap.data != null)
+                                    Text(
+                                      'Ayah ${verseSnap.data}',
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+  
+  Future<void> _playWholeSurah() async {
+    final settingsProvider = context.read<SettingsProvider>();
+    final audioService = context.read<AudioService>();
+    final quranProvider = context.read<QuranProvider>();
+    try {
+      final reciter = audioService.reciters.firstWhere(
+        (r) => r.identifier == settingsProvider.selectedReciter,
+        orElse: () => audioService.reciters.first,
+      );
+      // Ensure verses are loaded
+      if (quranProvider.currentVerses.isEmpty) {
+        await quranProvider.loadSurahVerses(
+          widget.surah.number,
+          translationEdition: settingsProvider.showTranslation ? settingsProvider.selectedTranslation : null,
+        );
+      }
+      final verseNumbers = quranProvider.currentVerses
+          .map((v) => v.numberInSurah)
+          .toList(growable: false);
+      if (verseNumbers.isEmpty) return;
+      // Fire-and-forget to avoid blocking UI while it plays the whole surah
+      // ignore: unawaited_futures
+      audioService.playSequentialVerses(widget.surah.number, verseNumbers, reciter);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error playing surah audio: $e')),
+        );
+      }
+    }
+  }
   
   void _setupAudioListener() {
     final audioService = context.read<AudioService>();
@@ -39,6 +165,26 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
         _scrollToVerse(currentVerse);
       }
     });
+  }
+
+  Widget _buildSurahHeader(QuranProvider quranProvider, SettingsProvider settingsProvider) {
+    final l10n = AppLocalizations.of(context)!;
+    if (widget.surah.number != 1 && widget.surah.number != 9) {
+      return Container
+        (
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+          l10n.bismillah,
+          style: GoogleFonts.amiri(
+            fontSize: settingsProvider.arabicFontSize,
+            color: settingsProvider.nightMode ? Colors.white : null,
+          ),
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
   
   void _scrollToVerse(int verseNumber) {
@@ -80,6 +226,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
     final settingsProvider = context.watch<SettingsProvider>();
     final bookmarkProvider = context.watch<BookmarkProvider>();
     
+    final audioService = context.read<AudioService>();
     return Scaffold(
       appBar: _isReaderMode
           ? null
@@ -108,18 +255,12 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                     });
                   },
                 ),
-                IconButton(
-                  icon: const Icon(Icons.text_fields),
-                  onPressed: () => _showFontSizeDialog(),
-                ),
-                if (settingsProvider.showTranslation)
-                  IconButton(
-                    icon: const Icon(Icons.translate),
-                    onPressed: () => _showTranslationDialog(),
-                  ),
                 PopupMenuButton<String>(
                   onSelected: (value) {
                     switch (value) {
+                      case 'play_surah':
+                        _playWholeSurah();
+                        break;
                       case 'font_size':
                         _showFontSizeDialog();
                         break;
@@ -132,6 +273,16 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                     }
                   },
                   itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'play_surah',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.play_circle_fill),
+                          const SizedBox(width: 8),
+                          const Text('Play Surah'),
+                        ],
+                      ),
+                    ),
                     PopupMenuItem(
                       value: 'font_size',
                       child: Row(
@@ -182,95 +333,99 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                     ],
                   ),
                 )
+              : quranProvider.currentVerses.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(l10n.loading),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: _loadSurahData,
+                            child: Text(l10n.retry),
+                          ),
+                        ],
+                      ),
+                    )
               : _isReaderMode 
                   ? _buildReaderModeView(quranProvider, settingsProvider, bookmarkProvider)
                   : Container(
-                      color: settingsProvider.nightMode ? Colors.black : null,
+                      color: settingsProvider.nightMode
+                          ? Colors.black
+                          : Theme.of(context).colorScheme.background,
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(16),
                         itemCount: quranProvider.currentVerses.length + 1,
                         itemBuilder: (context, index) {
-                      if (index == 0) {
-                        // Bismillah for all surahs except At-Tawbah (9) and Al-Fatihah (1)
-                        if (widget.surah.number != 1 && widget.surah.number != 9) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Text(
-                              l10n.bismillah,
-                              style: GoogleFonts.amiri(
-                                fontSize: settingsProvider.arabicFontSize,
-                                color: settingsProvider.nightMode ? Colors.white : null,
-                              ),
-                              textAlign: TextAlign.center,
-                              textDirection: TextDirection.rtl,
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }
-                      
-                      final verse = quranProvider.currentVerses[index - 1];
-                      final verseKey = _verseKeys.putIfAbsent(verse.numberInSurah, () => GlobalKey());
-                      return VerseWidget(
-                        key: verseKey,
-                        verse: verse,
-                        surahName: widget.surah.name,
-                        onBookmark: () async {
                           try {
-                            final isBookmarked = await bookmarkProvider.isBookmarked(
-                              widget.surah.number,
-                              verse.numberInSurah,
-                            );
-                            
-                            if (isBookmarked) {
-                              final bookmark = bookmarkProvider.getBookmark(
-                                widget.surah.number,
-                                verse.numberInSurah,
-                              );
-                              if (bookmark != null) {
-                                await bookmarkProvider.removeBookmark(bookmark.id);
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Bookmark removed')),
+                            if (index == 0) {
+                              return _buildSurahHeader(quranProvider, settingsProvider);
+                            }
+                            final verse = quranProvider.currentVerses[index - 1];
+                            _verseKeys[verse.numberInSurah] ??= GlobalKey();
+                            return VerseWidget(
+                              key: _verseKeys[verse.numberInSurah],
+                              verse: verse,
+                              surahName: widget.surah.name,
+                              onBookmark: () async {
+                                try {
+                                  final isBookmarked = await bookmarkProvider.isBookmarked(
+                                    widget.surah.number,
+                                    verse.numberInSurah,
                                   );
+                                  if (isBookmarked) {
+                                    final bookmark = bookmarkProvider.getBookmark(
+                                      widget.surah.number,
+                                      verse.numberInSurah,
+                                    );
+                                    if (bookmark != null) {
+                                      await bookmarkProvider.removeBookmark(bookmark.id);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Bookmark removed')),
+                                        );
+                                      }
+                                    }
+                                  } else {
+                                    await bookmarkProvider.addBookmark(
+                                      surahNumber: widget.surah.number,
+                                      verseNumber: verse.numberInSurah,
+                                      surahName: widget.surah.name,
+                                      verseText: verse.text,
+                                      translation: verse.translation,
+                                    );
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Bookmark added')),
+                                      );
+                                    }
+                                  }
+                                  await bookmarkProvider.loadBookmarks();
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error with bookmark: $e')),
+                                    );
+                                  }
                                 }
-                              }
-                            } else {
-                              await bookmarkProvider.addBookmark(
-                                surahNumber: widget.surah.number,
-                                verseNumber: verse.numberInSurah,
-                                surahName: widget.surah.name,
-                                verseText: verse.text,
-                                translation: verse.translation,
-                              );
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Bookmark added')),
-                                );
-                              }
-                            }
-                            
-                            // Force refresh of bookmarks
-                            await bookmarkProvider.loadBookmarks();
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error with bookmark: $e')),
-                              );
-                            }
+                              },
+                              onShare: () {
+                                _shareVerse(verse);
+                              },
+                              onPlayAudio: () {
+                                _playVerseAudio(verse);
+                              },
+                            );
+                          } catch (e, st) {
+                            debugPrint('Render error in verse item: $e\n$st');
+                            return const SizedBox.shrink();
                           }
                         },
-                        onShare: () {
-                          _shareVerse(verse);
-                        },
-                        onPlayAudio: () {
-                          _playVerseAudio(verse);
-                        },
-                      );
-                    },
                   ),
                 ),
+      bottomNavigationBar: _buildMiniPlayer(audioService),
     );
   }
 

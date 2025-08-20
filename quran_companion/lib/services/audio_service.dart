@@ -16,6 +16,7 @@ class AudioService {
   int? _currentSurah;
   int? _currentVerse;
   bool _isPlayingVerse = false;
+  bool _cancelSequential = false;
   
   // Stream controllers for audio synchronization
   final _currentVerseController = StreamController<int?>.broadcast();
@@ -185,6 +186,11 @@ class AudioService {
   Future<void> stop() async {
     await _audioPlayer.stop();
   }
+
+  // Cancel any ongoing sequential playback
+  void cancelSequential() {
+    _cancelSequential = true;
+  }
   
   Future<void> seek(Duration position) async {
     await _audioPlayer.seek(position);
@@ -240,7 +246,11 @@ class AudioService {
 
   // Sequential verse playback for continuous reading
   Future<void> playSequentialVerses(int surahNumber, List<int> verseNumbers, Reciter reciter) async {
+    _cancelSequential = false;
     for (int i = 0; i < verseNumbers.length; i++) {
+      if (_cancelSequential) {
+        break;
+      }
       try {
         await playVerse(surahNumber, verseNumbers[i], reciter);
         

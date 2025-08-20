@@ -89,7 +89,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.all(16),
                 itemCount: _searchResults.length,
                 itemBuilder: (context, index) {
-                  final verse = _searchResults[index];
+                  final result = _searchResults[index];
+                  final verse = result.verse;
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: Padding(
@@ -97,9 +98,20 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '${verse.surahNumber}:${verse.numberInSurah}',
-                            style: Theme.of(context).textTheme.labelMedium,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                result.surahName,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${verse.surahNumber}:${verse.numberInSurah}',
+                                style: Theme.of(context).textTheme.labelMedium,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -112,6 +124,20 @@ class _SearchScreenState extends State<SearchScreen> {
                             Text(
                               verse.translation!,
                               style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                          if (result.snippet.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                result.snippet,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
                             ),
                           ],
                         ],
@@ -156,12 +182,31 @@ class _SearchScreenState extends State<SearchScreen> {
       _isSearching = true;
     });
     
-    final quranProvider = context.read<QuranProvider>();
-    final results = await quranProvider.searchVerses(query);
-    
-    setState(() {
-      _searchResults = results;
-      _isSearching = false;
-    });
+    try {
+      // Use SQLite search service for better performance
+      final results = await _searchService.search(
+        query,
+        searchArabic: _searchArabic,
+        searchTranslation: _searchTranslation,
+      );
+      
+      setState(() {
+        _searchResults = results;
+        _isSearching = false;
+      });
+    } catch (e) {
+      // Fallback to API search if SQLite fails
+      final quranProvider = context.read<QuranProvider>();
+      final apiResults = await quranProvider.searchVerses(query);
+      
+      setState(() {
+        _searchResults = apiResults.map((verse) => SearchResult(
+          verse: verse,
+          surahName: 'Surah ${verse.surahNumber}',
+          snippet: '',
+        )).toList();
+        _isSearching = false;
+      });
+    }
   }
 }

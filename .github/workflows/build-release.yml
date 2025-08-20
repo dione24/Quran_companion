@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Setup Java
       uses: actions/setup-java@v3
@@ -52,7 +52,7 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Download Android artifacts
       uses: actions/download-artifact@v3

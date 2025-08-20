@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -88,11 +87,11 @@ class _SplashScreenState extends State<SplashScreen>
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -112,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
                       // App Name
                       Text(
                         'Quran Companion',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -126,7 +125,7 @@ class _SplashScreenState extends State<SplashScreen>
                         'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -136,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen>
                         'Au nom d\'Allah, le Tout Miséricordieux',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -148,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 40,
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white.withOpacity(0.8),
+                            Colors.white.withValues(alpha: 0.8),
                           ),
                           strokeWidth: 3,
                         ),

@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             center: Alignment.topRight,
                             radius: 1.5,
                             colors: [
-                              Colors.white.withOpacity(0.3),
+                              Colors.white.withValues(alpha: 0.3),
                               Colors.transparent,
                             ],
                           ),
@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: ClipOval(
@@ -181,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           'Companion',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            color: Colors.white.withOpacity(0.9),
+                                            color: Colors.white.withValues(alpha: 0.9),
                                             letterSpacing: 0.5,
                                             fontWeight: FontWeight.w300,
                                           ),
@@ -397,13 +397,13 @@ class _HomeScreenState extends State<HomeScreen> {
           end: Alignment.bottomRight,
           colors: [
             color,
-            color.withOpacity(0.8),
+            color.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -422,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

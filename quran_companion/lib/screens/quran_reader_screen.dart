@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/surah.dart';
 import '../models/verse.dart';
 import '../providers/quran_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/bookmark_provider.dart';
-import '../services/audio_service.dart';
 import '../widgets/verse_widget.dart';
+import '../l10n/app_localizations.dart';
+import '../services/audio_service.dart';
 
 class QuranReaderScreen extends StatefulWidget {
   final Surah surah;
@@ -21,15 +21,36 @@ class QuranReaderScreen extends StatefulWidget {
 }
 
 class _QuranReaderScreenState extends State<QuranReaderScreen> {
-  final AudioService _audioService = AudioService();
   final ScrollController _scrollController = ScrollController();
-  bool _isPlaying = false;
   bool _isReaderMode = false;
+  final Map<int, GlobalKey> _verseKeys = {};
   
   @override
   void initState() {
     super.initState();
     _loadSurahData();
+    _setupAudioListener();
+  }
+  
+  void _setupAudioListener() {
+    final audioService = context.read<AudioService>();
+    audioService.currentVerseStream.listen((currentVerse) {
+      if (currentVerse != null && mounted) {
+        _scrollToVerse(currentVerse);
+      }
+    });
+  }
+  
+  void _scrollToVerse(int verseNumber) {
+    final key = _verseKeys[verseNumber];
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        alignment: 0.2, // Show verse at 20% from top of screen
+      );
+    }
   }
   
   void _loadSurahData() {
@@ -48,7 +69,6 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
   
   @override
   void dispose() {
-    _audioService.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -61,87 +81,91 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
     final bookmarkProvider = context.watch<BookmarkProvider>();
     
     return Scaffold(
-      appBar: _isReaderMode ? null : AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.surah.name,
-              style: GoogleFonts.amiri(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      appBar: _isReaderMode
+          ? null
+          : AppBar(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.surah.name,
+                    style: GoogleFonts.amiri(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${widget.surah.englishNameTranslation} • ${widget.surah.numberOfAyahs} ${l10n.verses}',
+                  ),
+                ],
               ),
-            ),
-            Text(
-              '${widget.surah.englishNameTranslation} • ${widget.surah.numberOfAyahs} ${l10n.verses}',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-            onPressed: _toggleAudioPlayback,
-          ),
-          IconButton(
-            icon: Icon(_isReaderMode ? Icons.fullscreen_exit : Icons.fullscreen),
-            onPressed: () {
-              setState(() {
-                _isReaderMode = !_isReaderMode;
-              });
-            },
-            tooltip: _isReaderMode ? 'Quitter le mode lecteur' : 'Mode lecteur',
-          ),
-          if (!_isReaderMode)
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                switch (value) {
-                  case 'font_size':
-                    _showFontSizeDialog();
-                    break;
-                  case 'translation':
-                    _showTranslationDialog();
-                    break;
-                  case 'night_mode':
-                    settingsProvider.setNightMode(!settingsProvider.nightMode);
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'font_size',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.text_fields),
-                      const SizedBox(width: 8),
-                      Text(l10n.fontSize),
-                    ],
-                  ),
+              actions: [
+                IconButton(
+                  icon: Icon(_isReaderMode ? Icons.list : Icons.book),
+                  onPressed: () {
+                    setState(() {
+                      _isReaderMode = !_isReaderMode;
+                    });
+                  },
                 ),
-                PopupMenuItem(
-                  value: 'translation',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.translate),
-                      const SizedBox(width: 8),
-                      Text(l10n.translation),
-                    ],
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.text_fields),
+                  onPressed: () => _showFontSizeDialog(),
                 ),
-                PopupMenuItem(
-                  value: 'night_mode',
-                  child: Row(
-                    children: [
-                      Icon(settingsProvider.nightMode ? Icons.light_mode : Icons.dark_mode),
-                      const SizedBox(width: 8),
-                      Text(l10n.nightMode),
-                    ],
+                if (settingsProvider.showTranslation)
+                  IconButton(
+                    icon: const Icon(Icons.translate),
+                    onPressed: () => _showTranslationDialog(),
                   ),
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'font_size':
+                        _showFontSizeDialog();
+                        break;
+                      case 'translation':
+                        _showTranslationDialog();
+                        break;
+                      case 'night_mode':
+                        settingsProvider.setNightMode(!settingsProvider.nightMode);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'font_size',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.text_fields),
+                          const SizedBox(width: 8),
+                          Text(l10n.fontSize),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'translation',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.translate),
+                          const SizedBox(width: 8),
+                          Text(l10n.translation),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'night_mode',
+                      child: Row(
+                        children: [
+                          Icon(settingsProvider.nightMode ? Icons.light_mode : Icons.dark_mode),
+                          const SizedBox(width: 8),
+                          Text(l10n.nightMode),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-        ],
-      ),
       body: quranProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : quranProvider.error != null
@@ -187,7 +211,9 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                       }
                       
                       final verse = quranProvider.currentVerses[index - 1];
+                      final verseKey = _verseKeys.putIfAbsent(verse.numberInSurah, () => GlobalKey());
                       return VerseWidget(
+                        key: verseKey,
                         verse: verse,
                         surahName: widget.surah.name,
                         onBookmark: () async {
@@ -344,7 +370,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: IconButton(
@@ -359,7 +385,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: IconButton(
@@ -384,7 +410,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
@@ -403,45 +429,17 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
     );
   }
   
-  void _toggleAudioPlayback() async {
-    final settingsProvider = context.read<SettingsProvider>();
-    
-    if (_isPlaying) {
-      await _audioService.pause();
-      setState(() {
-        _isPlaying = false;
-      });
-    } else {
-      try {
-        final reciter = _audioService.reciters.firstWhere(
-          (r) => r.identifier == settingsProvider.selectedReciter,
-          orElse: () => _audioService.reciters.first,
-        );
-        
-        await _audioService.playSurah(widget.surah.number, reciter);
-        setState(() {
-          _isPlaying = true;
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error playing audio: $e')),
-          );
-        }
-      }
-    }
-  }
-  
   void _playVerseAudio(Verse verse) async {
     final settingsProvider = context.read<SettingsProvider>();
+    final audioService = context.read<AudioService>();
     
     try {
-      final reciter = _audioService.reciters.firstWhere(
+      final reciter = audioService.reciters.firstWhere(
         (r) => r.identifier == settingsProvider.selectedReciter,
-        orElse: () => _audioService.reciters.first,
+        orElse: () => audioService.reciters.first,
       );
       
-      await _audioService.playVerse(
+      await audioService.playVerse(
         widget.surah.number,
         verse.numberInSurah,
         reciter,

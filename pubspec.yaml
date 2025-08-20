@@ -42,7 +42,7 @@ dependencies:
   permission_handler: ^11.1.0
   
   # Internationalization
-  intl: ^0.18.1
+  intl: ^0.20.2
   
   # Social Sharing
   share_plus: ^8.0.0
@@ -58,7 +58,7 @@ dependencies:
   wear: ^1.1.0
   
   # Tajweed Support
-  flutter_tajweed: ^1.0.3
+  # flutter_tajweed: ^1.0.3  # Package not available on pub.dev
   flutter_html: ^3.0.0-beta.2
   
   # Image Generation

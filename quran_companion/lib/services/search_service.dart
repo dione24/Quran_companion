@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/verse.dart';
@@ -166,7 +167,7 @@ class SearchService {
         ));
       }
     } catch (e) {
-      print('Search error: $e');
+      debugPrint('Search error: $e');
     }
     
     return results;
@@ -225,7 +226,7 @@ class SearchService {
         ));
       }
     } catch (e) {
-      print('Search in surah error: $e');
+      debugPrint('Search in surah error: $e');
     }
     
     return results;
@@ -253,7 +254,7 @@ class SearchService {
         suggestions.add(map['suggestion'] as String);
       }
     } catch (e) {
-      print('Suggestions error: $e');
+      debugPrint('Suggestions error: $e');
     }
     
     return suggestions;

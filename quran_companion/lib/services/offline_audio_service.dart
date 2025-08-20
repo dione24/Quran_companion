@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,7 +55,7 @@ class OfflineAudioService {
       }
       return false;
     } catch (e) {
-      print('Error downloading audio: $e');
+      debugPrint('Error downloading audio: $e');
       return false;
     }
   }
@@ -70,7 +71,7 @@ class OfflineAudioService {
         // Small delay to avoid overwhelming the server
         await Future.delayed(const Duration(milliseconds: 500));
       } catch (e) {
-        print('Error downloading surah $i for ${reciter.englishName}: $e');
+        debugPrint('Error downloading surah $i for ${reciter.englishName}: $e');
       }
     }
   }
@@ -116,7 +117,7 @@ class OfflineAudioService {
       downloaded.remove(reciterIdentifier);
       await prefs.setStringList('downloaded_reciters', downloaded);
     } catch (e) {
-      print('Error deleting reciter audio: $e');
+      debugPrint('Error deleting reciter audio: $e');
     }
   }
 
@@ -168,7 +169,7 @@ class OfflineAudioService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('downloaded_reciters');
     } catch (e) {
-      print('Error clearing audio: $e');
+      debugPrint('Error clearing audio: $e');
     }
   }
 }

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:just_audio/just_audio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:audio_session/audio_session.dart';
 import '../models/reciter.dart';
 import 'audio_download_service.dart';
@@ -12,6 +14,15 @@ class AudioService {
   
   Reciter? _currentReciter;
   int? _currentSurah;
+  int? _currentVerse;
+  bool _isPlayingVerse = false;
+  
+  // Stream controllers for audio synchronization
+  final _currentVerseController = StreamController<int?>.broadcast();
+  final _playbackStateController = StreamController<bool>.broadcast();
+  
+  Stream<int?> get currentVerseStream => _currentVerseController.stream;
+  Stream<bool> get playbackStateStream => _playbackStateController.stream;
   
   // Popular reciters with their server directories
   final List<Reciter> reciters = [
@@ -100,19 +111,24 @@ class AudioService {
         // Stream from internet - format surah number with leading zeros
         final formattedSurah = surahNumber.toString().padLeft(3, '0');
         final url = '$baseAudioUrl/${reciter.identifier}/$formattedSurah.mp3';
-        print('Attempting to play audio from: $url');
+        debugPrint('Attempting to play audio from: $url');
         await _audioPlayer.setUrl(url);
       }
       
       await _audioPlayer.play();
     } catch (e) {
-      print('Audio error: $e');
+      debugPrint('Audio error: $e');
       throw Exception('Failed to play audio: $e');
     }
   }
   
   Future<void> playVerse(int surahNumber, int verseNumber, Reciter reciter) async {
     try {
+      _currentSurah = surahNumber;
+      _currentVerse = verseNumber;
+      _currentReciter = reciter;
+      _isPlayingVerse = true;
+      
       // Format: 001001 (surah 001, verse 001)
       final formattedSurah = surahNumber.toString().padLeft(3, '0');
       final formattedVerse = verseNumber.toString().padLeft(3, '0');
@@ -120,8 +136,22 @@ class AudioService {
       
       final url = 'https://everyayah.com/data/${reciter.identifier}/$verseId.mp3';
       await _audioPlayer.setUrl(url);
+      
+      // Notify listeners about current verse
+      _currentVerseController.add(verseNumber);
+      _playbackStateController.add(true);
+      
       await _audioPlayer.play();
+      
+      // Listen for completion to auto-play next verse
+      _audioPlayer.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          _onVerseCompleted();
+        }
+      });
     } catch (e) {
+      _isPlayingVerse = false;
+      _playbackStateController.add(false);
       throw Exception('Failed to play verse audio: $e');
     }
   }
@@ -181,7 +211,42 @@ class AudioService {
     await _offlineAudioService.clearAllAudio();
   }
 
+  // Handle verse completion and auto-play next verse
+  void _onVerseCompleted() {
+    if (_currentVerse != null && _currentSurah != null && _currentReciter != null) {
+      _currentVerseController.add(null); // Clear current verse highlight
+      _playbackStateController.add(false);
+      _isPlayingVerse = false;
+    }
+  }
+
+  // Sequential verse playback for continuous reading
+  Future<void> playSequentialVerses(int surahNumber, List<int> verseNumbers, Reciter reciter) async {
+    for (int i = 0; i < verseNumbers.length; i++) {
+      try {
+        await playVerse(surahNumber, verseNumbers[i], reciter);
+        
+        // Wait for verse to complete before playing next
+        await _audioPlayer.playerStateStream
+            .where((state) => state.processingState == ProcessingState.completed)
+            .first;
+        
+        // Small pause between verses
+        await Future.delayed(const Duration(milliseconds: 500));
+      } catch (e) {
+        debugPrint('Error playing verse ${verseNumbers[i]}: $e');
+        break;
+      }
+    }
+  }
+
+  // Get current playing verse
+  int? get currentVerse => _currentVerse;
+  bool get isPlayingVerse => _isPlayingVerse;
+
   void dispose() {
+    _currentVerseController.close();
+    _playbackStateController.close();
     _audioPlayer.dispose();
   }
 }

@@ -355,7 +355,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
               // Progress indicator
               LinearProgressIndicator(
                 value: (_currentQuestionIndex + 1) / _questions.length,
-                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
               const SizedBox(height: 24),
               
@@ -406,9 +406,9 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                     Color? backgroundColor;
                     if (_isAnswered) {
                       if (isCorrect) {
-                        backgroundColor = Colors.green.withOpacity(0.3);
+                        backgroundColor = Colors.green.withValues(alpha: 0.3);
                       } else if (isSelected && !isCorrect) {
-                        backgroundColor = Colors.red.withOpacity(0.3);
+                        backgroundColor = Colors.red.withValues(alpha: 0.3);
                       }
                     }
                     

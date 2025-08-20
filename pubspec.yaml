@@ -1,0 +1,126 @@
+name: quran_companion
+description: A comprehensive Quran reader and study tool for iOS and Android
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+  
+  # Audio
+  just_audio: ^0.9.36
+  just_audio_background: ^0.0.1-beta.11
+  
+  # Location & Maps
+  geolocator: ^10.1.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  
+  # Prayer Times
+  adhan: ^2.0.0-nullsafety.2
+  
+  # UI & Styling
+  google_fonts: ^6.1.0
+  
+  # Networking
+  http: ^1.1.2
+  
+  # Permissions
+  permission_handler: ^11.1.0
+  
+  # Internationalization
+  intl: ^0.18.1
+  
+  # Social Sharing
+  share_plus: ^8.0.0
+  screenshot: ^2.1.0
+  
+  # Notifications
+  flutter_local_notifications: ^16.3.0
+  
+  # Widget Support
+  home_widget: ^0.5.0
+  
+  # Wear OS Support
+  wear: ^1.1.0
+  
+  # Tajweed Support
+  flutter_tajweed: ^1.0.3
+  flutter_html: ^3.0.0-beta.2
+  
+  # Image Generation
+  path_provider: ^2.1.1
+  image: ^4.1.3
+  
+  # Compass
+  flutter_compass: ^0.8.0
+  
+  # SQLite for search
+  sqflite: ^2.3.0
+  
+  # Connectivity
+  connectivity_plus: ^5.0.2
+  
+  # File Operations
+  dio: ^5.4.0
+  
+  # Background Tasks
+  workmanager: ^0.5.2
+  
+  # Device Info
+  device_info_plus: ^9.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.7
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/
+    - assets/fonts/
+    - assets/images/
+    - assets/data/
+    - assets/data/quran/
+    - assets/data/translations/
+    - assets/data/tafsir/
+    - assets/data/tajweed/
+    - assets/data/quiz/
+    - assets/icons/
+    - assets/audio/
+    
+  fonts:
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
+    - family: KFGQPC
+      fonts:
+        - asset: assets/fonts/KFGQPC-Regular.ttf
+        
+  generate: true
+
+flutter_intl:
+  enabled: true
+  class_name: S
+  main_locale: fr
+  arb_dir: lib/l10n
+  output_dir: lib/generated

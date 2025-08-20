@@ -58,6 +58,7 @@ dependencies:
   wear: ^1.1.0
   
   # Tajweed Support
+  flutter_tajweed: ^1.0.3
   flutter_html: ^3.0.0-beta.2
   
   # Image Generation

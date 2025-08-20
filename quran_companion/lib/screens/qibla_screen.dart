@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_qiblah/flutter_qiblah.dart';
+import '../l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 
 class QiblaScreen extends StatefulWidget {
@@ -11,28 +10,77 @@ class QiblaScreen extends StatefulWidget {
   State<QiblaScreen> createState() => _QiblaScreenState();
 }
 
-class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-  final _deviceSupport = FlutterQiblah.androidDeviceSensorSupport();
-  
+class _QiblaScreenState extends State<QiblaScreen> {
+  Position? _currentPosition;
+  double? _qiblaDirection;
+  bool _isLoading = true;
+  String? _errorMessage;
+
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    );
-    _animation = Tween<double>(
-      begin: 0,
-      end: 2 * math.pi,
-    ).animate(_animationController);
+    _getCurrentLocation();
   }
-  
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _errorMessage = 'Location permission denied';
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _errorMessage = 'Location permission permanently denied';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      _currentPosition = await Geolocator.getCurrentPosition();
+      _calculateQiblaDirection();
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error getting location: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _calculateQiblaDirection() {
+    if (_currentPosition == null) return;
+    
+    // Kaaba coordinates (Mecca)
+    const double kaabaLat = 21.4225;
+    const double kaabaLng = 39.8262;
+    
+    final double lat1 = _currentPosition!.latitude * math.pi / 180;
+    const double lat2 = kaabaLat * math.pi / 180;
+    final double deltaLng = (kaabaLng - _currentPosition!.longitude) * math.pi / 180;
+    
+    final double y = math.sin(deltaLng) * math.cos(lat2);
+    final double x = math.cos(lat1) * math.sin(lat2) - 
+                     math.sin(lat1) * math.cos(lat2) * math.cos(deltaLng);
+    
+    _qiblaDirection = math.atan2(y, x) * 180 / math.pi;
+    if (_qiblaDirection! < 0) {
+      _qiblaDirection = _qiblaDirection! + 360;
+    }
   }
 
   @override
@@ -43,219 +91,135 @@ class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStat
       appBar: AppBar(
         title: Text(l10n.qibla),
       ),
-      body: FutureBuilder<bool?>(
-        future: _deviceSupport,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          }
-          
-          if (snapshot.data != true) {
-            return const Center(
-              child: Text('Your device does not support Qibla compass'),
-            );
-          }
-          
-          return StreamBuilder<QiblahDirection>(
-            stream: FlutterQiblah.qiblahStream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              
-              if (snapshot.hasError) {
-                return Center(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(Icons.location_off, size: 64, color: Colors.red),
                       const SizedBox(height: 16),
-                      Text('Error: ${snapshot.error}'),
+                      Text(
+                        _errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
+                      ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () async {
-                          await _checkLocationPermission();
-                          setState(() {});
-                        },
-                        child: Text(l10n.enableLocation),
+                        onPressed: _getCurrentLocation,
+                        child: const Text('Retry'),
                       ),
                     ],
                   ),
-                );
-              }
-              
-              final qiblahDirection = snapshot.data;
-              
-              if (qiblahDirection == null) {
-                return const Center(child: Text('Unable to determine Qibla direction'));
-              }
-              
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '${qiblahDirection.offset.toStringAsFixed(0)}°',
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'from North',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 32),
-                    Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Theme.of(context).colorScheme.surface,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
+                )
+              : _qiblaDirection == null
+                  ? const Center(
+                      child: Text('Unable to calculate Qibla direction'),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Compass background
+                          Text(
+                            'Qibla Direction',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 32),
                           Container(
+                            width: 200,
+                            height: 200,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                colors: [
-                                  Theme.of(context).colorScheme.primaryContainer,
-                                  Theme.of(context).colorScheme.surface,
-                                ],
-                              ),
+                              border: Border.all(color: Colors.green, width: 3),
                             ),
-                          ),
-                          
-                          // Compass directions
-                          ...List.generate(4, (index) {
-                            final directions = ['N', 'E', 'S', 'W'];
-                            final angle = index * (math.pi / 2);
-                            return Transform.rotate(
-                              angle: angle,
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    directions[index],
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }),
-                          
-                          // Qibla indicator
-                          Transform.rotate(
-                            angle: (qiblahDirection.qiblah * (math.pi / 180)) - 
-                                   (qiblahDirection.direction * (math.pi / 180)),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Stack(
+                              alignment: Alignment.center,
                               children: [
+                                // Compass background
                                 Container(
-                                  width: 10,
-                                  height: 100,
+                                  width: 180,
+                                  height: 180,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(5),
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey.shade100,
                                   ),
                                 ),
+                                // North indicator
+                                Positioned(
+                                  top: 10,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Text(
+                                      'N',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Qibla direction arrow
                                 Transform.rotate(
-                                  angle: math.pi,
-                                  child: Icon(
+                                  angle: (_qiblaDirection! * math.pi / 180),
+                                  child: const Icon(
                                     Icons.navigation,
-                                    size: 40,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    size: 80,
+                                    color: Colors.green,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          
-                          // Kaaba icon at center
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.yellow,
-                                width: 2,
+                          const SizedBox(height: 24),
+                          Text(
+                            '${_qiblaDirection!.toStringAsFixed(1)}°',
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Direction to Kaaba (Mecca)',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          const SizedBox(height: 32),
+                          Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 32),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                    Icons.info_outline,
+                                    color: Colors.blue,
+                                    size: 32,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Instructions',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Point your device in the direction of the green arrow to face the Qibla.',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
-                            ),
-                            child: const Icon(
-                              Icons.home,
-                              color: Colors.yellow,
-                              size: 30,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Your Location:'),
-                                Text(
-                                  '${qiblahDirection.latitude.toStringAsFixed(2)}°, '
-                                  '${qiblahDirection.longitude.toStringAsFixed(2)}°',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Qibla Direction:'),
-                                Text(
-                                  '${qiblahDirection.offset.toStringAsFixed(2)}°',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
     );
-  }
-  
-  Future<void> _checkLocationPermission() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
   }
 }

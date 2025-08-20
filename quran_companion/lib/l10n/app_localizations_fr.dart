@@ -144,16 +144,55 @@ class AppLocalizationsFr extends AppLocalizations {
   String get enterApiKey => 'Entrer la clé API Geoapify';
 
   @override
-  String get apiKeyRequired => 'Clé API requise pour trouver des mosquées';
+  String get showTranslation => 'Afficher la traduction';
 
   @override
-  String get noInternet => 'Pas de connexion Internet';
+  String get showTafsir => 'Afficher le tafsir';
 
   @override
-  String get loading => 'Chargement...';
+  String get surah => 'Sourate';
+
+  @override
+  String get ayah => 'Ayah';
+
+  @override
+  String get quiz => 'Quiz';
+
+  @override
+  String get memorization => 'Mémorisation';
+
+  @override
+  String get progress => 'Progrès';
+
+  @override
+  String get statistics => 'Statistiques';
+
+  @override
+  String get about => 'À propos';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get developer => 'Développeur';
+
+  @override
+  String get contact => 'Contact';
+
+  @override
+  String get share => 'Partager';
+
+  @override
+  String get copy => 'Copier';
+
+  @override
+  String get copied => 'Copié';
 
   @override
   String get error => 'Erreur';
+
+  @override
+  String get loading => 'Chargement';
 
   @override
   String get retry => 'Réessayer';
@@ -162,19 +201,253 @@ class AppLocalizationsFr extends AppLocalizations {
   String get cancel => 'Annuler';
 
   @override
-  String get save => 'Enregistrer';
-
-  @override
-  String get delete => 'Supprimer';
-
-  @override
-  String get confirm => 'Confirmer';
+  String get ok => 'OK';
 
   @override
   String get yes => 'Oui';
 
   @override
   String get no => 'Non';
+
+  @override
+  String get save => 'Enregistrer';
+
+  @override
+  String get delete => 'Supprimer';
+
+  @override
+  String get edit => 'Modifier';
+
+  @override
+  String get add => 'Ajouter';
+
+  @override
+  String get close => 'Fermer';
+
+  @override
+  String get back => 'Retour';
+
+  @override
+  String get next => 'Suivant';
+
+  @override
+  String get previous => 'Précédent';
+
+  @override
+  String get finish => 'Terminer';
+
+  @override
+  String get start => 'Commencer';
+
+  @override
+  String get continueText => 'Continuer';
+
+  @override
+  String get reset => 'Réinitialiser';
+
+  @override
+  String get clear => 'Effacer';
+
+  @override
+  String get select => 'Sélectionner';
+
+  @override
+  String get selectAll => 'Tout sélectionner';
+
+  @override
+  String get deselectAll => 'Tout désélectionner';
+
+  @override
+  String get filter => 'Filtrer';
+
+  @override
+  String get sort => 'Trier';
+
+  @override
+  String get sortBy => 'Trier par';
+
+  @override
+  String get ascending => 'Croissant';
+
+  @override
+  String get descending => 'Décroissant';
+
+  @override
+  String get name => 'Nom';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get size => 'Taille';
+
+  @override
+  String get type => 'Type';
+
+  @override
+  String get status => 'Statut';
+
+  @override
+  String get enabled => 'Activé';
+
+  @override
+  String get disabled => 'Désactivé';
+
+  @override
+  String get online => 'En ligne';
+
+  @override
+  String get offline => 'Hors ligne';
+
+  @override
+  String get connected => 'Connecté';
+
+  @override
+  String get disconnected => 'Déconnecté';
+
+  @override
+  String get available => 'Disponible';
+
+  @override
+  String get unavailable => 'Indisponible';
+
+  @override
+  String get visible => 'Visible';
+
+  @override
+  String get hidden => 'Masqué';
+
+  @override
+  String get public => 'Public';
+
+  @override
+  String get private => 'Privé';
+
+  @override
+  String get read => 'Lire';
+
+  @override
+  String get write => 'Écrire';
+
+  @override
+  String get execute => 'Exécuter';
+
+  @override
+  String get permission => 'Permission';
+
+  @override
+  String get permissions => 'Permissions';
+
+  @override
+  String get access => 'Accès';
+
+  @override
+  String get denied => 'Refusé';
+
+  @override
+  String get granted => 'Accordé';
+
+  @override
+  String get pending => 'En attente';
+
+  @override
+  String get approved => 'Approuvé';
+
+  @override
+  String get rejected => 'Rejeté';
+
+  @override
+  String get completed => 'Terminé';
+
+  @override
+  String get failed => 'Échoué';
+
+  @override
+  String get success => 'Succès';
+
+  @override
+  String get warning => 'Avertissement';
+
+  @override
+  String get info => 'Information';
+
+  @override
+  String get debug => 'Débogage';
+
+  @override
+  String get trace => 'Trace';
+
+  @override
+  String get log => 'Journal';
+
+  @override
+  String get logs => 'Journaux';
+
+  @override
+  String get history => 'Historique';
+
+  @override
+  String get recent => 'Récent';
+
+  @override
+  String get favorite => 'Favori';
+
+  @override
+  String get favorites => 'Favoris';
+
+  @override
+  String get popular => 'Populaire';
+
+  @override
+  String get trending => 'Tendance';
+
+  @override
+  String get newItem => 'Nouveau';
+
+  @override
+  String get updated => 'Mis à jour';
+
+  @override
+  String get created => 'Créé';
+
+  @override
+  String get modified => 'Modifié';
+
+  @override
+  String get deleted => 'Supprimé';
+
+  @override
+  String get restored => 'Restauré';
+
+  @override
+  String get archived => 'Archivé';
+
+  @override
+  String get unarchived => 'Désarchivé';
+
+  @override
+  String get published => 'Publié';
+
+  @override
+  String get unpublished => 'Non publié';
+
+  @override
+  String get draft => 'Brouillon';
+
+  @override
+  String get finalItem => 'Final';
+
+  @override
+  String get temporary => 'Temporaire';
+
+  @override
+  String get permanent => 'Permanent';
+
+  @override
+  String get apiKeyRequired => 'Clé API requise pour trouver des mosquées';
+
+  @override
+  String get noInternet => 'Pas de connexion Internet';
 
   @override
   String get searchPlaceholder => 'Rechercher dans le Coran...';
@@ -186,25 +459,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutApp => 'À propos';
 
   @override
-  String get version => 'Version';
-
-  @override
-  String get developer => 'Développeur';
-
-  @override
-  String get share => 'Partager';
-
-  @override
   String get shareVerse => 'Partager le verset';
 
   @override
   String get copyVerse => 'Copier le verset';
 
   @override
-  String get copied => 'Copié';
-
-  @override
-  String get quiz => 'Quiz';
+  String get confirm => 'Confirmer';
 
   @override
   String get startQuiz => 'Commencer le quiz';

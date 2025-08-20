@@ -36,7 +36,7 @@ dependencies:
   
   # Islamic tools
   adhan: ^2.0.0-nullsafety.2
-  flutter_qiblah: ^2.2.0
+  # flutter_qiblah: ^2.2.0  # Temporarily disabled due to namespace issues
   
   # UI
   google_fonts: ^6.1.0
@@ -48,7 +48,7 @@ dependencies:
   connectivity_plus: ^5.0.2
   path_provider: ^2.1.1
   flutter_native_splash: ^2.3.8
-  flutter_local_notifications: ^16.2.0
+  # flutter_local_notifications: ^16.3.3  # Temporarily disabled due to compilation error
   dio: ^5.4.0
   flutter_file_dialog: ^3.0.2
   timezone: ^0.9.2
@@ -65,13 +65,5 @@ flutter:
   
   assets:
     - assets/data/
-    - assets/fonts/
-    
-  fonts:
-    - family: Amiri
-      fonts:
-        - asset: assets/fonts/Amiri-Regular.ttf
-        - asset: assets/fonts/Amiri-Bold.ttf
-          weight: 700
           
   generate: true

@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import '../models/mosque.dart';
-import 'local_storage_service.dart';
 
 class MosqueService {
   static const String baseUrl = 'https://api.geoapify.com/v2/places';
-  final LocalStorageService _localStorage = LocalStorageService();
   
   Future<List<Mosque>> getNearbyMosques({
     required double latitude,
@@ -15,11 +13,8 @@ class MosqueService {
     int limit = 20,
   }) async {
     try {
-      // Get API key
-      final apiKey = await _localStorage.getApiKey();
-      if (apiKey == null || apiKey.isEmpty) {
-        throw Exception('API key not set. Please add your Geoapify API key in settings.');
-      }
+      // Use hardcoded API key
+      const apiKey = '8ce0d8cf73c448b0b5f4f0c0c548d270';
       
       // Build URL with parameters
       final params = {

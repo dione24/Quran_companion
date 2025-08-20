@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/surah.dart';
 import '../models/verse.dart';
 import '../models/bookmark.dart';
-import '../models/bookmark.g.dart';
+// import '../models/bookmark.g.dart'; // Commented out due to part file issue
 
 class LocalStorageService {
   static const String _surahsKey = 'cached_surahs';

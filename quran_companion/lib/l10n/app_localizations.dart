@@ -368,29 +368,107 @@ abstract class AppLocalizations {
   /// **'Entrer la clé API Geoapify'**
   String get enterApiKey;
 
-  /// No description provided for @apiKeyRequired.
+  /// No description provided for @showTranslation.
   ///
   /// In fr, this message translates to:
-  /// **'Clé API requise pour trouver des mosquées'**
-  String get apiKeyRequired;
+  /// **'Afficher la traduction'**
+  String get showTranslation;
 
-  /// No description provided for @noInternet.
+  /// No description provided for @showTafsir.
   ///
   /// In fr, this message translates to:
-  /// **'Pas de connexion Internet'**
-  String get noInternet;
+  /// **'Afficher le tafsir'**
+  String get showTafsir;
 
-  /// No description provided for @loading.
+  /// No description provided for @surah.
   ///
   /// In fr, this message translates to:
-  /// **'Chargement...'**
-  String get loading;
+  /// **'Sourate'**
+  String get surah;
+
+  /// No description provided for @ayah.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ayah'**
+  String get ayah;
+
+  /// No description provided for @quiz.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quiz'**
+  String get quiz;
+
+  /// No description provided for @memorization.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mémorisation'**
+  String get memorization;
+
+  /// No description provided for @progress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Progrès'**
+  String get progress;
+
+  /// No description provided for @statistics.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statistiques'**
+  String get statistics;
+
+  /// No description provided for @about.
+  ///
+  /// In fr, this message translates to:
+  /// **'À propos'**
+  String get about;
+
+  /// No description provided for @version.
+  ///
+  /// In fr, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @developer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Développeur'**
+  String get developer;
+
+  /// No description provided for @contact.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contact'**
+  String get contact;
+
+  /// No description provided for @share.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get share;
+
+  /// No description provided for @copy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier'**
+  String get copy;
+
+  /// No description provided for @copied.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copié'**
+  String get copied;
 
   /// No description provided for @error.
   ///
   /// In fr, this message translates to:
   /// **'Erreur'**
   String get error;
+
+  /// No description provided for @loading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chargement'**
+  String get loading;
 
   /// No description provided for @retry.
   ///
@@ -404,23 +482,11 @@ abstract class AppLocalizations {
   /// **'Annuler'**
   String get cancel;
 
-  /// No description provided for @save.
+  /// No description provided for @ok.
   ///
   /// In fr, this message translates to:
-  /// **'Enregistrer'**
-  String get save;
-
-  /// No description provided for @delete.
-  ///
-  /// In fr, this message translates to:
-  /// **'Supprimer'**
-  String get delete;
-
-  /// No description provided for @confirm.
-  ///
-  /// In fr, this message translates to:
-  /// **'Confirmer'**
-  String get confirm;
+  /// **'OK'**
+  String get ok;
 
   /// No description provided for @yes.
   ///
@@ -433,6 +499,486 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Non'**
   String get no;
+
+  /// No description provided for @save.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer'**
+  String get save;
+
+  /// No description provided for @delete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get delete;
+
+  /// No description provided for @edit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier'**
+  String get edit;
+
+  /// No description provided for @add.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter'**
+  String get add;
+
+  /// No description provided for @close.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fermer'**
+  String get close;
+
+  /// No description provided for @back.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get back;
+
+  /// No description provided for @next.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suivant'**
+  String get next;
+
+  /// No description provided for @previous.
+  ///
+  /// In fr, this message translates to:
+  /// **'Précédent'**
+  String get previous;
+
+  /// No description provided for @finish.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminer'**
+  String get finish;
+
+  /// No description provided for @start.
+  ///
+  /// In fr, this message translates to:
+  /// **'Commencer'**
+  String get start;
+
+  /// No description provided for @continueText.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get continueText;
+
+  /// No description provided for @reset.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réinitialiser'**
+  String get reset;
+
+  /// No description provided for @clear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get clear;
+
+  /// No description provided for @select.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionner'**
+  String get select;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout sélectionner'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout désélectionner'**
+  String get deselectAll;
+
+  /// No description provided for @filter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Filtrer'**
+  String get filter;
+
+  /// No description provided for @sort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trier'**
+  String get sort;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trier par'**
+  String get sortBy;
+
+  /// No description provided for @ascending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Croissant'**
+  String get ascending;
+
+  /// No description provided for @descending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Décroissant'**
+  String get descending;
+
+  /// No description provided for @name.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get name;
+
+  /// No description provided for @date.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @size.
+  ///
+  /// In fr, this message translates to:
+  /// **'Taille'**
+  String get size;
+
+  /// No description provided for @type.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type'**
+  String get type;
+
+  /// No description provided for @status.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statut'**
+  String get status;
+
+  /// No description provided for @enabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activé'**
+  String get enabled;
+
+  /// No description provided for @disabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivé'**
+  String get disabled;
+
+  /// No description provided for @online.
+  ///
+  /// In fr, this message translates to:
+  /// **'En ligne'**
+  String get online;
+
+  /// No description provided for @offline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne'**
+  String get offline;
+
+  /// No description provided for @connected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connecté'**
+  String get connected;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déconnecté'**
+  String get disconnected;
+
+  /// No description provided for @available.
+  ///
+  /// In fr, this message translates to:
+  /// **'Disponible'**
+  String get available;
+
+  /// No description provided for @unavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indisponible'**
+  String get unavailable;
+
+  /// No description provided for @visible.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visible'**
+  String get visible;
+
+  /// No description provided for @hidden.
+  ///
+  /// In fr, this message translates to:
+  /// **'Masqué'**
+  String get hidden;
+
+  /// No description provided for @public.
+  ///
+  /// In fr, this message translates to:
+  /// **'Public'**
+  String get public;
+
+  /// No description provided for @private.
+  ///
+  /// In fr, this message translates to:
+  /// **'Privé'**
+  String get private;
+
+  /// No description provided for @read.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire'**
+  String get read;
+
+  /// No description provided for @write.
+  ///
+  /// In fr, this message translates to:
+  /// **'Écrire'**
+  String get write;
+
+  /// No description provided for @execute.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exécuter'**
+  String get execute;
+
+  /// No description provided for @permission.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permission'**
+  String get permission;
+
+  /// No description provided for @permissions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permissions'**
+  String get permissions;
+
+  /// No description provided for @access.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accès'**
+  String get access;
+
+  /// No description provided for @denied.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refusé'**
+  String get denied;
+
+  /// No description provided for @granted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accordé'**
+  String get granted;
+
+  /// No description provided for @pending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente'**
+  String get pending;
+
+  /// No description provided for @approved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Approuvé'**
+  String get approved;
+
+  /// No description provided for @rejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeté'**
+  String get rejected;
+
+  /// No description provided for @completed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminé'**
+  String get completed;
+
+  /// No description provided for @failed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échoué'**
+  String get failed;
+
+  /// No description provided for @success.
+  ///
+  /// In fr, this message translates to:
+  /// **'Succès'**
+  String get success;
+
+  /// No description provided for @warning.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avertissement'**
+  String get warning;
+
+  /// No description provided for @info.
+  ///
+  /// In fr, this message translates to:
+  /// **'Information'**
+  String get info;
+
+  /// No description provided for @debug.
+  ///
+  /// In fr, this message translates to:
+  /// **'Débogage'**
+  String get debug;
+
+  /// No description provided for @trace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trace'**
+  String get trace;
+
+  /// No description provided for @log.
+  ///
+  /// In fr, this message translates to:
+  /// **'Journal'**
+  String get log;
+
+  /// No description provided for @logs.
+  ///
+  /// In fr, this message translates to:
+  /// **'Journaux'**
+  String get logs;
+
+  /// No description provided for @history.
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique'**
+  String get history;
+
+  /// No description provided for @recent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récent'**
+  String get recent;
+
+  /// No description provided for @favorite.
+  ///
+  /// In fr, this message translates to:
+  /// **'Favori'**
+  String get favorite;
+
+  /// No description provided for @favorites.
+  ///
+  /// In fr, this message translates to:
+  /// **'Favoris'**
+  String get favorites;
+
+  /// No description provided for @popular.
+  ///
+  /// In fr, this message translates to:
+  /// **'Populaire'**
+  String get popular;
+
+  /// No description provided for @trending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tendance'**
+  String get trending;
+
+  /// No description provided for @newItem.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau'**
+  String get newItem;
+
+  /// No description provided for @updated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mis à jour'**
+  String get updated;
+
+  /// No description provided for @created.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créé'**
+  String get created;
+
+  /// No description provided for @modified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifié'**
+  String get modified;
+
+  /// No description provided for @deleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimé'**
+  String get deleted;
+
+  /// No description provided for @restored.
+  ///
+  /// In fr, this message translates to:
+  /// **'Restauré'**
+  String get restored;
+
+  /// No description provided for @archived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Archivé'**
+  String get archived;
+
+  /// No description provided for @unarchived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désarchivé'**
+  String get unarchived;
+
+  /// No description provided for @published.
+  ///
+  /// In fr, this message translates to:
+  /// **'Publié'**
+  String get published;
+
+  /// No description provided for @unpublished.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non publié'**
+  String get unpublished;
+
+  /// No description provided for @draft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon'**
+  String get draft;
+
+  /// No description provided for @finalItem.
+  ///
+  /// In fr, this message translates to:
+  /// **'Final'**
+  String get finalItem;
+
+  /// No description provided for @temporary.
+  ///
+  /// In fr, this message translates to:
+  /// **'Temporaire'**
+  String get temporary;
+
+  /// No description provided for @permanent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permanent'**
+  String get permanent;
+
+  /// No description provided for @apiKeyRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clé API requise pour trouver des mosquées'**
+  String get apiKeyRequired;
+
+  /// No description provided for @noInternet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas de connexion Internet'**
+  String get noInternet;
 
   /// No description provided for @searchPlaceholder.
   ///
@@ -452,24 +998,6 @@ abstract class AppLocalizations {
   /// **'À propos'**
   String get aboutApp;
 
-  /// No description provided for @version.
-  ///
-  /// In fr, this message translates to:
-  /// **'Version'**
-  String get version;
-
-  /// No description provided for @developer.
-  ///
-  /// In fr, this message translates to:
-  /// **'Développeur'**
-  String get developer;
-
-  /// No description provided for @share.
-  ///
-  /// In fr, this message translates to:
-  /// **'Partager'**
-  String get share;
-
   /// No description provided for @shareVerse.
   ///
   /// In fr, this message translates to:
@@ -482,17 +1010,11 @@ abstract class AppLocalizations {
   /// **'Copier le verset'**
   String get copyVerse;
 
-  /// No description provided for @copied.
+  /// No description provided for @confirm.
   ///
   /// In fr, this message translates to:
-  /// **'Copié'**
-  String get copied;
-
-  /// No description provided for @quiz.
-  ///
-  /// In fr, this message translates to:
-  /// **'Quiz'**
-  String get quiz;
+  /// **'Confirmer'**
+  String get confirm;
 
   /// No description provided for @startQuiz.
   ///

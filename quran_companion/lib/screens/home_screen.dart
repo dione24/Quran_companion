@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/quran_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/daily_verse_card.dart';

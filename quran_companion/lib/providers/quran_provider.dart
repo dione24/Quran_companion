@@ -24,7 +24,9 @@ class QuranProvider extends ChangeNotifier {
     
     _isLoading = true;
     _error = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     
     try {
       _surahs = await _quranService.getAllSurahs();
@@ -32,7 +34,9 @@ class QuranProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
   

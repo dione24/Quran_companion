@@ -24,6 +24,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
   final AudioService _audioService = AudioService();
   final ScrollController _scrollController = ScrollController();
   bool _isPlaying = false;
+  bool _isReaderMode = false;
   
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
     final bookmarkProvider = context.watch<BookmarkProvider>();
     
     return Scaffold(
-      appBar: AppBar(
+      appBar: _isReaderMode ? null : AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -82,53 +83,63 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
             icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
             onPressed: _toggleAudioPlayback,
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'font_size':
-                  _showFontSizeDialog();
-                  break;
-                case 'translation':
-                  _showTranslationDialog();
-                  break;
-                case 'night_mode':
-                  settingsProvider.setNightMode(!settingsProvider.nightMode);
-                  break;
-              }
+          IconButton(
+            icon: Icon(_isReaderMode ? Icons.fullscreen_exit : Icons.fullscreen),
+            onPressed: () {
+              setState(() {
+                _isReaderMode = !_isReaderMode;
+              });
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'font_size',
-                child: Row(
-                  children: [
-                    const Icon(Icons.text_fields),
-                    const SizedBox(width: 8),
-                    Text(l10n.fontSize),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'translation',
-                child: Row(
-                  children: [
-                    const Icon(Icons.translate),
-                    const SizedBox(width: 8),
-                    Text(l10n.translation),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'night_mode',
-                child: Row(
-                  children: [
-                    Icon(settingsProvider.nightMode ? Icons.light_mode : Icons.dark_mode),
-                    const SizedBox(width: 8),
-                    Text(l10n.nightMode),
-                  ],
-                ),
-              ),
-            ],
+            tooltip: _isReaderMode ? 'Quitter le mode lecteur' : 'Mode lecteur',
           ),
+          if (!_isReaderMode)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'font_size':
+                    _showFontSizeDialog();
+                    break;
+                  case 'translation':
+                    _showTranslationDialog();
+                    break;
+                  case 'night_mode':
+                    settingsProvider.setNightMode(!settingsProvider.nightMode);
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'font_size',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.text_fields),
+                      const SizedBox(width: 8),
+                      Text(l10n.fontSize),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'translation',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.translate),
+                      const SizedBox(width: 8),
+                      Text(l10n.translation),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'night_mode',
+                  child: Row(
+                    children: [
+                      Icon(settingsProvider.nightMode ? Icons.light_mode : Icons.dark_mode),
+                      const SizedBox(width: 8),
+                      Text(l10n.nightMode),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       body: quranProvider.isLoading
@@ -147,13 +158,15 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                     ],
                   ),
                 )
-              : Container(
-                  color: settingsProvider.nightMode ? Colors.black : null,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: quranProvider.currentVerses.length + 1,
-                    itemBuilder: (context, index) {
+              : _isReaderMode 
+                  ? _buildReaderModeView(quranProvider, settingsProvider, bookmarkProvider)
+                  : Container(
+                      color: settingsProvider.nightMode ? Colors.black : null,
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: quranProvider.currentVerses.length + 1,
+                        itemBuilder: (context, index) {
                       if (index == 0) {
                         // Bismillah for all surahs except At-Tawbah (9) and Al-Fatihah (1)
                         if (widget.surah.number != 1 && widget.surah.number != 9) {
@@ -178,27 +191,48 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                         verse: verse,
                         surahName: widget.surah.name,
                         onBookmark: () async {
-                          final isBookmarked = await bookmarkProvider.isBookmarked(
-                            widget.surah.number,
-                            verse.numberInSurah,
-                          );
-                          
-                          if (isBookmarked) {
-                            final bookmark = bookmarkProvider.getBookmark(
+                          try {
+                            final isBookmarked = await bookmarkProvider.isBookmarked(
                               widget.surah.number,
                               verse.numberInSurah,
                             );
-                            if (bookmark != null) {
-                              await bookmarkProvider.removeBookmark(bookmark.id);
+                            
+                            if (isBookmarked) {
+                              final bookmark = bookmarkProvider.getBookmark(
+                                widget.surah.number,
+                                verse.numberInSurah,
+                              );
+                              if (bookmark != null) {
+                                await bookmarkProvider.removeBookmark(bookmark.id);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Bookmark removed')),
+                                  );
+                                }
+                              }
+                            } else {
+                              await bookmarkProvider.addBookmark(
+                                surahNumber: widget.surah.number,
+                                verseNumber: verse.numberInSurah,
+                                surahName: widget.surah.name,
+                                verseText: verse.text,
+                                translation: verse.translation,
+                              );
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Bookmark added')),
+                                );
+                              }
                             }
-                          } else {
-                            await bookmarkProvider.addBookmark(
-                              surahNumber: widget.surah.number,
-                              verseNumber: verse.numberInSurah,
-                              surahName: widget.surah.name,
-                              verseText: verse.text,
-                              translation: verse.translation,
-                            );
+                            
+                            // Force refresh of bookmarks
+                            await bookmarkProvider.loadBookmarks();
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error with bookmark: $e')),
+                              );
+                            }
                           }
                         },
                         onShare: () {
@@ -211,6 +245,161 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                     },
                   ),
                 ),
+    );
+  }
+
+  Widget _buildReaderModeView(QuranProvider quranProvider, SettingsProvider settingsProvider, BookmarkProvider bookmarkProvider) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isReaderMode = false;
+        });
+      },
+      child: Container(
+        color: settingsProvider.nightMode ? Colors.black : const Color(0xFFF5F5DC), // Beige background for reading
+        child: Stack(
+          children: [
+            // Main content
+            ListView.builder(
+              controller: _scrollController,
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.1, // 10% margin on each side
+                vertical: 40,
+              ),
+              itemCount: quranProvider.currentVerses.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  // Bismillah for all surahs except At-Tawbah (9) and Al-Fatihah (1)
+                  if (widget.surah.number != 1 && widget.surah.number != 9) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        AppLocalizations.of(context)!.bismillah,
+                        style: GoogleFonts.amiri(
+                          fontSize: settingsProvider.arabicFontSize + 4, // Slightly larger in reader mode
+                          color: settingsProvider.nightMode ? Colors.white : Colors.black87,
+                          height: 1.8,
+                        ),
+                        textAlign: TextAlign.center,
+                        textDirection: TextDirection.rtl,
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }
+                
+                final verse = quranProvider.currentVerses[index - 1];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Arabic text
+                      Text(
+                        verse.text,
+                        style: GoogleFonts.amiri(
+                          fontSize: settingsProvider.arabicFontSize + 2, // Slightly larger
+                          color: settingsProvider.nightMode ? Colors.white : Colors.black87,
+                          height: 2.0, // Increased line height for better readability
+                        ),
+                        textAlign: TextAlign.right,
+                        textDirection: TextDirection.rtl,
+                      ),
+                      
+                      // Verse number
+                      const SizedBox(height: 12),
+                      Text(
+                        '﴿${verse.numberInSurah}﴾',
+                        style: GoogleFonts.amiri(
+                          fontSize: 18,
+                          color: settingsProvider.nightMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      // Translation (if available and enabled)
+                      if (verse.translation != null && settingsProvider.showTranslation) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          verse.translation!,
+                          style: TextStyle(
+                            fontSize: settingsProvider.translationFontSize + 1, // Slightly larger
+                            color: settingsProvider.nightMode ? Colors.grey[300] : Colors.grey[700],
+                            height: 1.6,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+            
+            // Floating controls
+            Positioned(
+              top: 40,
+              right: 20,
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.fullscreen_exit, color: Colors.white),
+                      onPressed: () {
+                        setState(() {
+                          _isReaderMode = false;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        settingsProvider.showTranslation ? Icons.translate : Icons.translate_outlined,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        settingsProvider.setShowTranslation(!settingsProvider.showTranslation);
+                        _loadSurahData();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Surah title overlay (appears briefly on tap)
+            Positioned(
+              top: 40,
+              left: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  widget.surah.name,
+                  style: GoogleFonts.amiri(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
   

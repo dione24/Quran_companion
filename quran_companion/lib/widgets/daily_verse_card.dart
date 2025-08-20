@@ -35,18 +35,27 @@ class DailyVerseCard extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    l10n.dailyVerse,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      l10n.dailyVerse,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.share),
+                    iconSize: 20,
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
                     onPressed: () {
                       final text = '${verse.verseKey}\n\n${verse.text}';
                       Clipboard.setData(ClipboardData(text: text));
@@ -57,20 +66,24 @@ class DailyVerseCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                verse.text,
-                style: GoogleFonts.amiri(
-                  fontSize: 20,
-                  height: 1.8,
-                ),
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.right,
-              ),
               const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  verse.text,
+                  style: GoogleFonts.amiri(
+                    fontSize: 16,
+                    height: 1.6,
+                  ),
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.right,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 6),
               Text(
                 '${l10n.surah} ${verse.surahNumber}, ${l10n.verse} ${verse.numberInSurah}',
-                style: Theme.of(context).textTheme.labelMedium,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
             ],
           ),

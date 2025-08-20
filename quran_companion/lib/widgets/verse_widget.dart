@@ -27,12 +27,12 @@ class VerseWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settingsProvider = context.watch<SettingsProvider>();
-    final bookmarkProvider = context.watch<BookmarkProvider>();
     
-    return FutureBuilder<bool>(
-      future: bookmarkProvider.isBookmarked(verse.surahNumber, verse.numberInSurah),
-      builder: (context, snapshot) {
-        final isBookmarked = snapshot.data ?? false;
+    return Consumer<BookmarkProvider>(
+      builder: (context, bookmarkProvider, child) {
+        final isBookmarked = bookmarkProvider.bookmarks.any((b) => 
+          b.surahNumber == verse.surahNumber && b.verseNumber == verse.numberInSurah
+        );
         
         return Card(
           margin: const EdgeInsets.only(bottom: 8),

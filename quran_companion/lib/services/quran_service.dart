@@ -3,14 +3,21 @@ import 'package:http/http.dart' as http;
 import '../models/surah.dart';
 import '../models/verse.dart';
 import 'local_storage_service.dart';
+import 'offline_quran_service.dart';
 
 class QuranService {
   static const String baseUrl = 'https://api.alquran.cloud/v1';
   final LocalStorageService _localStorage = LocalStorageService();
+  final OfflineQuranService _offlineService = OfflineQuranService();
 
   Future<List<Surah>> getAllSurahs() async {
     try {
-      // Try to get from local storage first
+      // Check if offline data is available first
+      if (await _offlineService.isOfflineDataAvailable()) {
+        return await _offlineService.getAllSurahs();
+      }
+
+      // Try to get from local storage
       final localData = await _localStorage.getCachedSurahs();
       if (localData != null) {
         return localData;
@@ -34,7 +41,11 @@ class QuranService {
         throw Exception('Failed to load surahs');
       }
     } catch (e) {
-      // Try to get from local storage if network fails
+      // Try offline data first, then local storage
+      if (await _offlineService.isOfflineDataAvailable()) {
+        return await _offlineService.getAllSurahs();
+      }
+      
       final localData = await _localStorage.getCachedSurahs();
       if (localData != null) {
         return localData;
@@ -45,7 +56,12 @@ class QuranService {
 
   Future<List<Verse>> getSurahVerses(int surahNumber, {String? edition}) async {
     try {
-      // Try to get from local storage first
+      // Check if offline data is available first
+      if (await _offlineService.isOfflineDataAvailable()) {
+        return await _offlineService.getSurahVerses(surahNumber, edition: edition);
+      }
+
+      // Try to get from local storage
       final localData = await _localStorage.getCachedVerses(surahNumber, edition ?? 'quran-simple');
       if (localData != null) {
         return localData;
@@ -73,7 +89,15 @@ class QuranService {
         throw Exception('Failed to load verses');
       }
     } catch (e) {
-      // Try to get from local storage if network fails
+      // Try offline data first, then local storage
+      if (await _offlineService.isOfflineDataAvailable()) {
+        try {
+          return await _offlineService.getSurahVerses(surahNumber, edition: edition);
+        } catch (_) {
+          // Continue to local storage fallback
+        }
+      }
+      
       final localData = await _localStorage.getCachedVerses(surahNumber, edition ?? 'quran-simple');
       if (localData != null) {
         return localData;
@@ -84,6 +108,11 @@ class QuranService {
 
   Future<List<Verse>> getSurahWithTranslation(int surahNumber, String translationEdition) async {
     try {
+      // Check if offline data is available first
+      if (await _offlineService.isOfflineDataAvailable()) {
+        return await _offlineService.getSurahWithTranslation(surahNumber, translationEdition);
+      }
+
       // Get Arabic text
       final arabicVerses = await getSurahVerses(surahNumber);
       
@@ -103,6 +132,11 @@ class QuranService {
 
   Future<Verse> getVerseOfTheDay() async {
     try {
+      // Check if offline data is available first
+      if (await _offlineService.isOfflineDataAvailable()) {
+        return await _offlineService.getVerseOfTheDay();
+      }
+
       // Get a random verse (you can implement your own logic)
       final random = DateTime.now().day % 6236 + 1; // Total verses in Quran
       
@@ -117,6 +151,11 @@ class QuranService {
         throw Exception('Failed to load verse of the day');
       }
     } catch (e) {
+      // Try offline data first
+      if (await _offlineService.isOfflineDataAvailable()) {
+        return await _offlineService.getVerseOfTheDay();
+      }
+      
       // Return a default verse if network fails
       return Verse(
         number: 1,

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../models/bookmark.dart';
 import '../services/local_storage_service.dart';
 
@@ -13,7 +14,9 @@ class BookmarkProvider extends ChangeNotifier {
   
   Future<void> loadBookmarks() async {
     _isLoading = true;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     
     try {
       _bookmarks = await _localStorage.getBookmarks();
@@ -21,7 +24,9 @@ class BookmarkProvider extends ChangeNotifier {
       _bookmarks = [];
     } finally {
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
   
@@ -46,13 +51,17 @@ class BookmarkProvider extends ChangeNotifier {
     
     await _localStorage.addBookmark(bookmark);
     _bookmarks.add(bookmark);
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
   
   Future<void> removeBookmark(String id) async {
     await _localStorage.removeBookmark(id);
     _bookmarks.removeWhere((b) => b.id == id);
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
   
   Future<bool> isBookmarked(int surahNumber, int verseNumber) async {

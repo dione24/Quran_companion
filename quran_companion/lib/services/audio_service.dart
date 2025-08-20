@@ -2,40 +2,42 @@ import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 import '../models/reciter.dart';
 import 'audio_download_service.dart';
+import 'offline_audio_service.dart';
 
 class AudioService {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final AudioDownloadService _downloadService = AudioDownloadService();
-  static const String baseAudioUrl = 'https://cdn.islamic.network/quran/audio/128';
+  final OfflineAudioService _offlineAudioService = OfflineAudioService();
+  static const String baseAudioUrl = 'https://server8.mp3quran.net';
   
   Reciter? _currentReciter;
   int? _currentSurah;
   
-  // Popular reciters
+  // Popular reciters with their server directories
   final List<Reciter> reciters = [
     Reciter(
-      identifier: 'ar.alafasy',
+      identifier: 'afs',
       name: 'مشاري العفاسي',
       englishName: 'Mishary Rashid Alafasy',
       style: 'Murattal',
       bitrate: '128',
     ),
     Reciter(
-      identifier: 'ar.abdulbasitmurattal',
+      identifier: 'abdulbasit',
       name: 'عبد الباسط عبد الصمد',
       englishName: 'Abdul Basit Abdul Samad',
       style: 'Murattal',
       bitrate: '128',
     ),
     Reciter(
-      identifier: 'ar.minshawi',
+      identifier: 'minshawi',
       name: 'محمد صديق المنشاوي',
       englishName: 'Mohamed Siddiq Al-Minshawi',
       style: 'Murattal',
       bitrate: '128',
     ),
     Reciter(
-      identifier: 'ar.husary',
+      identifier: 'husary',
       name: 'محمود خليل الحصري',
       englishName: 'Mahmoud Khalil Al-Hussary',
       style: 'Murattal',
@@ -64,27 +66,47 @@ class AudioService {
       _currentSurah = surahNumber;
       _currentReciter = reciter;
       
-      // Check if audio is downloaded
-      final isDownloaded = await _downloadService.isAudioDownloaded(
+      // Check if audio is downloaded (try new offline service first)
+      bool isDownloaded = await _offlineAudioService.isAudioDownloaded(
         surahNumber,
         reciter.identifier,
       );
       
-      if (isDownloaded) {
-        // Play from local file
-        final localPath = await _downloadService.getLocalAudioPath(
+      if (!isDownloaded) {
+        // Fallback to old download service
+        isDownloaded = await _downloadService.isAudioDownloaded(
           surahNumber,
           reciter.identifier,
         );
+      }
+      
+      if (isDownloaded) {
+        // Play from local file (try new service first)
+        String localPath;
+        try {
+          localPath = await _offlineAudioService.getLocalAudioPath(
+            surahNumber,
+            reciter.identifier,
+          );
+        } catch (e) {
+          // Fallback to old service
+          localPath = await _downloadService.getLocalAudioPath(
+            surahNumber,
+            reciter.identifier,
+          );
+        }
         await _audioPlayer.setAudioSource(AudioSource.uri(Uri.file(localPath)));
       } else {
-        // Stream from internet
-        final url = '$baseAudioUrl/${reciter.identifier}/$surahNumber.mp3';
+        // Stream from internet - format surah number with leading zeros
+        final formattedSurah = surahNumber.toString().padLeft(3, '0');
+        final url = '$baseAudioUrl/${reciter.identifier}/$formattedSurah.mp3';
+        print('Attempting to play audio from: $url');
         await _audioPlayer.setUrl(url);
       }
       
       await _audioPlayer.play();
     } catch (e) {
+      print('Audio error: $e');
       throw Exception('Failed to play audio: $e');
     }
   }
@@ -125,7 +147,40 @@ class AudioService {
   Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
   
   bool get isPlaying => _audioPlayer.playing;
-  
+
+  // Offline audio management methods
+  Future<bool> downloadSurahAudio(int surahNumber, Reciter reciter, {Function(double)? onProgress}) async {
+    return await _offlineAudioService.downloadSurahAudio(surahNumber, reciter, onProgress: onProgress);
+  }
+
+  Future<void> downloadAllSurahsForReciter(Reciter reciter, {Function(int, int)? onProgress}) async {
+    await _offlineAudioService.downloadAllSurahsForReciter(reciter, onProgress: onProgress);
+  }
+
+  Future<double> getDownloadProgress(String reciterIdentifier) async {
+    return await _offlineAudioService.getDownloadProgress(reciterIdentifier);
+  }
+
+  Future<bool> isReciterFullyDownloaded(String reciterIdentifier) async {
+    return await _offlineAudioService.isReciterFullyDownloaded(reciterIdentifier);
+  }
+
+  Future<List<String>> getDownloadedReciters() async {
+    return await _offlineAudioService.getDownloadedReciters();
+  }
+
+  Future<void> deleteReciterAudio(String reciterIdentifier) async {
+    await _offlineAudioService.deleteReciterAudio(reciterIdentifier);
+  }
+
+  Future<double> getTotalStorageUsed() async {
+    return await _offlineAudioService.getTotalStorageUsed();
+  }
+
+  Future<void> clearAllAudio() async {
+    await _offlineAudioService.clearAllAudio();
+  }
+
   void dispose() {
     _audioPlayer.dispose();
   }

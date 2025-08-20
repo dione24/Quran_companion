@@ -12,6 +12,7 @@ import 'settings_screen.dart';
 import 'prayer_times_screen.dart';
 import 'qibla_screen.dart';
 import 'mosque_finder_screen.dart';
+import 'quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -168,6 +169,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => const MosqueFinderScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildQuickActionCard(
+                        icon: Icons.quiz,
+                        label: l10n.quiz,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const QuizScreen(),
                             ),
                           );
                         },

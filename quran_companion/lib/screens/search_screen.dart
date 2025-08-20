@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../models/verse.dart';
 import '../providers/quran_provider.dart';
 import '../widgets/verse_widget.dart';
+import '../services/search_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -14,8 +15,11 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<Verse> _searchResults = [];
+  final SearchService _searchService = SearchService();
+  List<SearchResult> _searchResults = [];
   bool _isSearching = false;
+  bool _searchArabic = true;
+  bool _searchTranslation = true;
   
   @override
   void dispose() {

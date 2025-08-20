@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 import '../models/reciter.dart';
+import 'audio_download_service.dart';
 
 class AudioService {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioDownloadService _downloadService = AudioDownloadService();
   static const String baseAudioUrl = 'https://cdn.islamic.network/quran/audio/128';
   
   Reciter? _currentReciter;
@@ -62,8 +65,25 @@ class AudioService {
       _currentSurah = surahNumber;
       _currentReciter = reciter;
       
-      final url = '$baseAudioUrl/${reciter.identifier}/$surahNumber.mp3';
-      await _audioPlayer.setUrl(url);
+      // Check if audio is downloaded
+      final isDownloaded = await _downloadService.isAudioDownloaded(
+        surahNumber,
+        reciter.identifier,
+      );
+      
+      if (isDownloaded) {
+        // Play from local file
+        final localPath = await _downloadService.getLocalAudioPath(
+          surahNumber,
+          reciter.identifier,
+        );
+        await _audioPlayer.setFilePath(localPath);
+      } else {
+        // Stream from internet
+        final url = '$baseAudioUrl/${reciter.identifier}/$surahNumber.mp3';
+        await _audioPlayer.setUrl(url);
+      }
+      
       await _audioPlayer.play();
     } catch (e) {
       throw Exception('Failed to play audio: $e');

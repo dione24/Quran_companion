@@ -9,6 +9,7 @@ import 'providers/bookmark_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/local_storage_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,10 @@ void main() async {
   // Initialize local storage
   final localStorage = LocalStorageService();
   await localStorage.init();
+  
+  // Initialize notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([

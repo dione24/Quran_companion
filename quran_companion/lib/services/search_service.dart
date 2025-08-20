@@ -190,12 +190,6 @@ class SearchService {
       if (searchArabic) whereClause.add('text LIKE ?');
       if (searchTranslation) whereClause.add('translation LIKE ?');
       
-      final sql = '''
-        SELECT * FROM $_versesTable
-        WHERE ${whereClause.join(' AND ')}
-        ORDER BY numberInSurah
-      ''';
-      
       final params = <dynamic>[surahNumber];
       if (searchArabic) params.add('%$query%');
       if (searchTranslation) params.add('%$query%');

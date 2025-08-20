@@ -264,7 +264,6 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final isFrench = Localizations.localeOf(context).languageCode == 'fr';
     
     if (_isLoading) {

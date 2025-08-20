@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/quran_provider.dart';
-import '../providers/settings_provider.dart';
 import '../widgets/daily_verse_card.dart';
 import '../widgets/surah_list_tile.dart';
 import 'quran_reader_screen.dart';
@@ -38,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final settingsProvider = context.watch<SettingsProvider>();
     
     final List<Widget> pages = [
       _buildHomePage(),

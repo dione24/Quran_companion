@@ -124,7 +124,6 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen> {
   }
   
   Widget _buildListView() {
-    final l10n = AppLocalizations.of(context)!;
     
     return RefreshIndicator(
       onRefresh: _loadNearbyMosques,
@@ -252,7 +251,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen> {
                         borderRadius: BorderRadius.circular(4),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 2,
                           ),
                         ],

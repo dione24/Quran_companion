@@ -16,8 +16,8 @@ class _SearchScreenState extends State<SearchScreen> {
   final SearchService _searchService = SearchService();
   List<SearchResult> _searchResults = [];
   bool _isSearching = false;
-  bool _searchArabic = true;
-  bool _searchTranslation = true;
+  final bool _searchArabic = true;
+  final bool _searchTranslation = true;
   
   @override
   void dispose() {
@@ -129,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(

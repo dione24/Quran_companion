@@ -167,7 +167,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -249,10 +249,10 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               context.read<BookmarkProvider>().removeBookmark(bookmark.id);
               Navigator.pop(context);
             },
-            child: Text(l10n.delete),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
+            child: Text(l10n.delete),
           ),
         ],
       ),

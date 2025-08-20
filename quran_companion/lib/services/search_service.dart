@@ -235,7 +235,7 @@ class SearchService {
     
     try {
       // Get unique words from verses that match the query
-      final sql = '''
+      const sql = '''
         SELECT DISTINCT substr(text, 1, 50) as suggestion
         FROM $_versesTable
         WHERE text LIKE ?

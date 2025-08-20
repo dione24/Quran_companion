@@ -107,15 +107,15 @@ void main() {
       final quranService = QuranService();
       
       // Test with Arabic text
-      final arabicResults = await quranService.searchVerses('الله');
+      await quranService.searchVerses('الله');
       // Results depend on network availability
       
       // Test with English text
-      final englishResults = await quranService.searchVerses('Allah');
+      await quranService.searchVerses('Allah');
       // Results depend on network availability
       
       // Test with numbers
-      final numberResults = await quranService.searchVerses('1:1');
+      await quranService.searchVerses('1:1');
       // Results depend on network availability
     });
   });

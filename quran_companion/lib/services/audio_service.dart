@@ -59,6 +59,22 @@ class AudioService {
   AudioService() {
     _init();
   }
+
+  // Map our short identifiers to everyayah.com directory names for verse audio
+  String _everyAyahDirFor(String identifier) {
+    switch (identifier) {
+      case 'afs':
+        return 'Alafasy_128kbps';
+      case 'abdulbasit':
+        return 'Abdul_Basit_Murattal_64kbps';
+      case 'minshawi':
+        return 'Minshawy_Murattal_128kbps';
+      case 'husary':
+        return 'Husary_64kbps';
+      default:
+        return 'Alafasy_128kbps';
+    }
+  }
   
   Future<void> _init() async {
     final session = await AudioSession.instance;
@@ -134,7 +150,9 @@ class AudioService {
       final formattedVerse = verseNumber.toString().padLeft(3, '0');
       final verseId = '$formattedSurah$formattedVerse';
       
-      final url = 'https://everyayah.com/data/${reciter.identifier}/$verseId.mp3';
+      final dir = _everyAyahDirFor(reciter.identifier);
+      final url = 'https://everyayah.com/data/$dir/$verseId.mp3';
+      debugPrint('Attempting to play verse from: $url');
       await _audioPlayer.setUrl(url);
       
       // Notify listeners about current verse

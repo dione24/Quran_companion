@@ -32,12 +32,12 @@ class OfflineQuranService {
         
         // Load Arabic verses
         final arabicJson = await rootBundle.loadString('assets/data/quran/surah_$surahNumber.json');
-        await prefs.setString('${_versesKeyPrefix}${surahNumber}_quran-simple', arabicJson);
+        await prefs.setString('$_versesKeyPrefix${surahNumber}_quran-simple', arabicJson);
         
         // Load French translation
         try {
           final frenchJson = await rootBundle.loadString('assets/data/translations/surah_${surahNumber}_fr.hamidullah.json');
-          await prefs.setString('${_versesKeyPrefix}${surahNumber}_fr.hamidullah', frenchJson);
+          await prefs.setString('$_versesKeyPrefix${surahNumber}_fr.hamidullah', frenchJson);
         } catch (e) {
           // French translation not available for this surah
         }
@@ -45,7 +45,7 @@ class OfflineQuranService {
         // Load English translation
         try {
           final englishJson = await rootBundle.loadString('assets/data/translations/surah_${surahNumber}_en.sahih.json');
-          await prefs.setString('${_versesKeyPrefix}${surahNumber}_en.sahih', englishJson);
+          await prefs.setString('$_versesKeyPrefix${surahNumber}_en.sahih', englishJson);
         } catch (e) {
           // English translation not available for this surah
         }
@@ -75,7 +75,7 @@ class OfflineQuranService {
   // Get verses for a specific surah from local storage
   Future<List<Verse>> getSurahVerses(int surahNumber, {String? edition}) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = '${_versesKeyPrefix}${surahNumber}_${edition ?? 'quran-simple'}';
+    final key = '$_versesKeyPrefix${surahNumber}_${edition ?? 'quran-simple'}';
     final versesJson = prefs.getString(key);
     
     if (versesJson == null) {

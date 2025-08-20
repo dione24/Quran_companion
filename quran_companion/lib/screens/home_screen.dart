@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Container(
+              child: SizedBox(
                 height: 120,
                 child: DailyVerseCard(verse: quranProvider.verseOfTheDay!),
               ),

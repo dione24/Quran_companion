@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'l10n/app_localizations.dart';
@@ -12,6 +11,7 @@ import 'providers/quran_provider.dart';
 import 'screens/home_screen.dart';
 import 'splash_screen.dart';
 import 'services/notification_service.dart';
+import 'services/audio_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +46,10 @@ class QuranCompanionApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => QuranProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
+        Provider<AudioService>(
+          create: (_) => AudioService(),
+          dispose: (_, service) => service.dispose(),
+        ),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, child) {

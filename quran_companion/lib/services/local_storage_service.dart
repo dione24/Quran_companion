@@ -1,34 +1,13 @@
 import 'dart:convert';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/surah.dart';
 import '../models/verse.dart';
 import '../models/bookmark.dart';
-// import '../models/bookmark.g.dart'; // Commented out due to part file issue
+// Hive-based storage removed; using SharedPreferences only
 
 class LocalStorageService {
   static const String _surahsKey = 'cached_surahs';
   static const String _versesKeyPrefix = 'cached_verses_';
-  static const String _bookmarksBoxName = 'bookmarks';
-  static const String _notesBoxName = 'notes';
-  static const String _settingsBoxName = 'settings';
-  
-  late Box<Bookmark> _bookmarksBox;
-  late Box _notesBox;
-  late Box _settingsBox;
-  
-  Future<void> init() async {
-    await Hive.initFlutter();
-    
-    // Register adapters
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(BookmarkAdapter());
-    }
-    
-    _bookmarksBox = await Hive.openBox<Bookmark>(_bookmarksBoxName);
-    _notesBox = await Hive.openBox(_notesBoxName);
-    _settingsBox = await Hive.openBox(_settingsBoxName);
-  }
   
   // Surahs caching
   Future<void> cacheSurahs(List<Surah> surahs) async {

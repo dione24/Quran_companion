@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 import '../models/reciter.dart';
@@ -77,7 +76,7 @@ class AudioService {
           surahNumber,
           reciter.identifier,
         );
-        await _audioPlayer.setFilePath(localPath);
+        await _audioPlayer.setAudioSource(AudioSource.uri(Uri.file(localPath)));
       } else {
         // Stream from internet
         final url = '$baseAudioUrl/${reciter.identifier}/$surahNumber.mp3';

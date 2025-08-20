@@ -286,33 +286,35 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.fontSize),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(l10n.arabicFontSize),
-            Slider(
-              value: settingsProvider.arabicFontSize,
-              min: 18,
-              max: 40,
-              divisions: 11,
-              label: settingsProvider.arabicFontSize.round().toString(),
-              onChanged: (value) {
-                settingsProvider.setArabicFontSize(value);
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(l10n.translationFontSize),
-            Slider(
-              value: settingsProvider.translationFontSize,
-              min: 12,
-              max: 24,
-              divisions: 12,
-              label: settingsProvider.translationFontSize.round().toString(),
-              onChanged: (value) {
-                settingsProvider.setTranslationFontSize(value);
-              },
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.arabicFontSize),
+              Slider(
+                value: settingsProvider.arabicFontSize,
+                min: 18,
+                max: 40,
+                divisions: 11,
+                label: settingsProvider.arabicFontSize.round().toString(),
+                onChanged: (value) {
+                  settingsProvider.setArabicFontSize(value);
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(l10n.translationFontSize),
+              Slider(
+                value: settingsProvider.translationFontSize,
+                min: 12,
+                max: 24,
+                divisions: 12,
+                label: settingsProvider.translationFontSize.round().toString(),
+                onChanged: (value) {
+                  settingsProvider.setTranslationFontSize(value);
+                },
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -339,35 +341,37 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.translation),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SwitchListTile(
-              title: Text(l10n.showTranslation),
-              value: settingsProvider.showTranslation,
-              onChanged: (value) {
-                settingsProvider.setShowTranslation(value);
-                if (value) {
-                  _loadSurahData();
-                }
-              },
-            ),
-            if (settingsProvider.showTranslation) ...[
-              const Divider(),
-              ...translations.entries.map((entry) => RadioListTile<String>(
-                title: Text(entry.value),
-                value: entry.key,
-                groupValue: settingsProvider.selectedTranslation,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: Text(l10n.showTranslation),
+                value: settingsProvider.showTranslation,
                 onChanged: (value) {
-                  if (value != null) {
-                    settingsProvider.setSelectedTranslation(value);
+                  settingsProvider.setShowTranslation(value);
+                  if (value) {
                     _loadSurahData();
-                    Navigator.pop(context);
                   }
                 },
-              )),
+              ),
+              if (settingsProvider.showTranslation) ...[
+                const Divider(),
+                ...translations.entries.map((entry) => RadioListTile<String>(
+                  title: Text(entry.value),
+                  value: entry.key,
+                  groupValue: settingsProvider.selectedTranslation,
+                  onChanged: (value) {
+                    if (value != null) {
+                      settingsProvider.setSelectedTranslation(value);
+                      _loadSurahData();
+                      Navigator.pop(context);
+                    }
+                  },
+                )),
+              ],
             ],
-          ],
+          ),
         ),
         actions: [
           TextButton(

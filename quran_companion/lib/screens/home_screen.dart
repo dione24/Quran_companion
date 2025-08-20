@@ -28,8 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<QuranProvider>().loadSurahs();
-      context.read<QuranProvider>().loadVerseOfTheDay();
+      if (mounted) {
+        context.read<QuranProvider>().loadSurahs();
+        context.read<QuranProvider>().loadVerseOfTheDay();
+      }
     });
   }
 
@@ -82,31 +84,121 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomePage() {
     final l10n = AppLocalizations.of(context)!;
-    final quranProvider = context.watch<QuranProvider>();
     
-    return CustomScrollView(
-      slivers: [
+    return Consumer<QuranProvider>(
+      builder: (context, quranProvider, child) {
+        return CustomScrollView(
+          slivers: [
         SliverAppBar(
-          expandedHeight: 120.0,
+          expandedHeight: 140.0,
           floating: false,
           pinned: true,
           flexibleSpace: FlexibleSpaceBar(
-            title: Text(
-              l10n.appTitle,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
             background: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.secondary,
+                    const Color(0xFF1B4332),
+                    const Color(0xFF2D5A3D),
+                    const Color(0xFF40916C),
                   ],
                 ),
+              ),
+              child: Stack(
+                children: [
+                  // Subtle geometric pattern overlay
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.topRight,
+                            radius: 1.5,
+                            colors: [
+                              Colors.white.withOpacity(0.3),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Main content
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          // Compact Islamic greeting and app title
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    width: 28,
+                                    height: 28,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Quran',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Companion',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white.withOpacity(0.9),
+                                            letterSpacing: 0.5,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -116,78 +208,101 @@ class _HomeScreenState extends State<HomeScreen> {
         if (quranProvider.verseOfTheDay != null)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: DailyVerseCard(verse: quranProvider.verseOfTheDay!),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Container(
+                height: 120,
+                child: DailyVerseCard(verse: quranProvider.verseOfTheDay!),
+              ),
             ),
           ),
         
-        // Quick Actions
+        // Quick Actions with beautiful design
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Quick Access',
-                  style: Theme.of(context).textTheme.titleLarge,
+                // Section title with colored bar
+                Row(
+                  children: [
+                    Container(
+                      width: 3,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF40916C),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Accès Rapide',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1B4332),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                // Quick actions horizontal scroll
+                SizedBox(
+                  height: 100,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
                     children: [
-                      _buildQuickActionCard(
-                        icon: Icons.access_time,
-                        label: l10n.prayerTimes,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PrayerTimesScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      _buildQuickActionCard(
+                      _buildCompactActionCard(
                         icon: Icons.explore,
-                        label: l10n.qibla,
+                        label: 'Qibla',
+                        color: const Color(0xFF2D5A3D),
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const QiblaScreen(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const QiblaScreen()),
                           );
                         },
                       ),
-                      _buildQuickActionCard(
+                      const SizedBox(width: 12),
+                      _buildCompactActionCard(
+                        icon: Icons.access_time,
+                        label: 'Prière',
+                        color: const Color(0xFF40916C),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const PrayerTimesScreen()),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildCompactActionCard(
                         icon: Icons.mosque,
-                        label: l10n.mosques,
+                        label: 'Mosquées',
+                        color: const Color(0xFF52B788),
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const MosqueFinderScreen(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const MosqueFinderScreen()),
                           );
                         },
                       ),
-                      _buildQuickActionCard(
+                      const SizedBox(width: 12),
+                      _buildCompactActionCard(
                         icon: Icons.quiz,
-                        label: l10n.quiz,
+                        label: 'Quiz',
+                        color: const Color(0xFF74C69D),
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const QuizScreen(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const QuizScreen()),
                           );
                         },
                       ),
+                      const SizedBox(width: 16),
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -196,10 +311,26 @@ class _HomeScreenState extends State<HomeScreen> {
         // Surahs List
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              l10n.surahs,
-              style: Theme.of(context).textTheme.titleLarge,
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF40916C),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  l10n.surahs,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1B4332),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -247,33 +378,71 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
       ],
+        );
+      },
     );
   }
 
-  Widget _buildQuickActionCard({
+  Widget _buildCompactActionCard({
     required IconData icon,
     required String label,
+    required Color color,
     required VoidCallback onTap,
   }) {
-    return Card(
-      margin: const EdgeInsets.only(right: 12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          width: 120,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
+    return Container(
+      width: 120,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color,
+            color.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

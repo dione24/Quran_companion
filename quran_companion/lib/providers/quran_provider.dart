@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../models/surah.dart';
 import '../models/verse.dart';
 import '../services/quran_service.dart';
@@ -19,6 +20,8 @@ class QuranProvider extends ChangeNotifier {
   String? get error => _error;
   
   Future<void> loadSurahs() async {
+    if (_isLoading) return; // Prevent multiple simultaneous calls
+    
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -34,9 +37,13 @@ class QuranProvider extends ChangeNotifier {
   }
   
   Future<void> loadSurahVerses(int surahNumber, {String? translationEdition}) async {
+    if (_isLoading) return; // Prevent multiple simultaneous calls
+    
     _isLoading = true;
     _error = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     
     try {
       if (translationEdition != null) {
@@ -51,14 +58,18 @@ class QuranProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
   
   Future<void> loadVerseOfTheDay() async {
     try {
       _verseOfTheDay = await _quranService.getVerseOfTheDay();
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
       // Silently fail for verse of the day
     }

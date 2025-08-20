@@ -5,7 +5,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/mosque.dart';
 import '../services/mosque_service.dart';
-import '../services/local_storage_service.dart';
 
 class MosqueFinderScreen extends StatefulWidget {
   const MosqueFinderScreen({super.key});
@@ -16,7 +15,6 @@ class MosqueFinderScreen extends StatefulWidget {
 
 class _MosqueFinderScreenState extends State<MosqueFinderScreen> {
   final MosqueService _mosqueService = MosqueService();
-  final LocalStorageService _localStorage = LocalStorageService();
   final MapController _mapController = MapController();
   
   List<Mosque> _mosques = [];
@@ -32,16 +30,8 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen> {
   }
   
   Future<void> _checkApiKeyAndLoadMosques() async {
-    final apiKey = await _localStorage.getApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      setState(() {
-        _error = 'API key not set. Please add your Geoapify API key in settings.';
-        _isLoading = false;
-      });
-      _showApiKeyDialog();
-    } else {
-      _loadNearbyMosques();
-    }
+    // Skip API key check since it's hardcoded in the service
+    _loadNearbyMosques();
   }
   
   Future<void> _loadNearbyMosques() async {
@@ -108,17 +98,10 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
-                        if (_error!.contains('API key'))
-                          ElevatedButton.icon(
-                            onPressed: _showApiKeyDialog,
-                            icon: const Icon(Icons.key),
-                            label: Text(l10n.enterApiKey),
-                          )
-                        else
-                          ElevatedButton(
-                            onPressed: _loadNearbyMosques,
-                            child: Text(l10n.retry),
-                          ),
+                        ElevatedButton(
+                          onPressed: _loadNearbyMosques,
+                          child: Text(l10n.retry),
+                        ),
                       ],
                     ),
                   ),
@@ -379,50 +362,4 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen> {
     );
   }
   
-  void _showApiKeyDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.enterApiKey),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'To find nearby mosques, you need a free Geoapify API key.\n\n'
-              'Get yours at:\nhttps://myprojects.geoapify.com/',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                hintText: 'Enter your API key',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                await _localStorage.setApiKey(controller.text);
-                Navigator.pop(context);
-                _loadNearbyMosques();
-              }
-            },
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
-  }
 }

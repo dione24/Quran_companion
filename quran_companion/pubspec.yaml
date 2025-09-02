@@ -40,7 +40,7 @@ dependencies:
   # flutter_qiblah: ^2.2.0  # Temporarily disabled due to namespace issues
   
   # UI
-  google_fonts: ^6.1.0
+  google_fonts: ^6.3.1
   flutter_svg: ^2.0.9
   shimmer: ^3.0.0
   

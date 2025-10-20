@@ -48,7 +48,7 @@ dependencies:
   url_launcher: ^6.2.1
   connectivity_plus: ^5.0.2
   path_provider: ^2.1.1
-  flutter_native_splash: ^2.3.8
+  flutter_native_splash: ^2.4.7
   # flutter_local_notifications: ^16.3.3  # Temporarily disabled due to compilation error
   dio: ^5.4.0
   flutter_file_dialog: ^3.0.2
